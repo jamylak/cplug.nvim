@@ -11,8 +11,15 @@ This project currently has:
 - a core orchestration pipeline for detect -> optional scaffold -> build -> launch resolution
 - a shared backend contract for future language implementations
 - shared `.vscode/launch.json` resolution in the main pipeline
+- a minimal Python backend for existing projects
 
-Language backends and DAP startup are still being added in later iterations, so the command currently reports when no supported project backend is available.
+DAP startup and the other language backends are still being added in later iterations.
+
+Current backend scope:
+
+- Python detection for existing projects via `pyproject.toml`, `requirements.txt`, or top-level `*.py`
+- debug launch resolution through `.vscode/launch.json`
+- no Python scaffolding yet
 
 ## Setup
 

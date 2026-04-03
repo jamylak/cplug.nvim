@@ -22,6 +22,7 @@ This version provides:
 - `:checkhealth cplug`
 - a core orchestration flow for detection, scaffolding, build, and launch resolution
 - shared `.vscode/launch.json` resolution in the main pipeline
+- a minimal Python backend for existing projects
 
 Language backends and DAP startup are not implemented yet.
 

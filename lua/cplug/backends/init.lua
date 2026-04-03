@@ -1,6 +1,8 @@
 local M = {}
 
-local backend_modules = {}
+local backend_modules = {
+  "cplug.backends.python",
+}
 
 local required_methods = {
   "detect",
