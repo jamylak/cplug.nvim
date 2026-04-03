@@ -1,0 +1,73 @@
+*cplug.nvim*  Thin compile-and-debug entrypoint for small local projects
+
+==============================================================================
+CONTENTS                                                    *cplug-contents*
+
+1. Introduction..............................................|cplug-intro|
+2. Setup.....................................................|cplug-setup|
+3. Commands...............................................|cplug-commands|
+4. Health...................................................|cplug-health|
+
+==============================================================================
+INTRODUCTION                                                   *cplug-intro*
+
+cplug.nvim is intended to make `<leader>c` the compile-and-debug entrypoint for
+small local projects.
+
+This initial version only provides the plugin skeleton:
+
+- `require("cplug").setup()`
+- `:CPlugCompileDebug`
+- optional default keymap wiring
+- `:checkhealth cplug`
+
+The compile/build/debug pipeline is not implemented yet.
+
+==============================================================================
+SETUP                                                           *cplug-setup*
+
+Plain Neovim config: >
+  lua << EOF
+  require("cplug").setup()
+  EOF
+<
+
+Disable the default keymap: >
+  lua << EOF
+  require("cplug").setup({
+    default_keymaps = false,
+  })
+  EOF
+<
+
+lazy.nvim example: >
+  {
+    "jamylak/cplug.nvim",
+    keys = {
+      { "<leader>c", function() require("cplug").compile_and_debug() end, desc = "Compile and debug" },
+    },
+    config = function()
+      require("cplug").setup({
+        default_keymaps = false,
+      })
+    end,
+  }
+<
+
+==============================================================================
+COMMANDS                                                     *cplug-commands*
+
+:CPlugCompileDebug
+        Placeholder entrypoint for the future compile/build/debug flow.
+
+==============================================================================
+HEALTH                                                         *cplug-health*
+
+Run `:checkhealth cplug` to confirm that:
+
+- cplug.nvim is installed
+- `nvim-dap` is available
+- `nvim-dap-ui` is available
+
+==============================================================================
+vim:tw=78:ts=8:noet:ft=help:norl:
