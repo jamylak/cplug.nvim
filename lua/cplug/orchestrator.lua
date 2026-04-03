@@ -1,4 +1,5 @@
 local backends = require("cplug.backends")
+local launch = require("cplug.launch")
 
 local M = {}
 
@@ -57,7 +58,7 @@ function M.run(config)
     return nil, build_err
   end
 
-  local launch_config, launch_err = run_step(backend, "resolve_launch", ctx, project, build_result)
+  local launch_config, launch_err = launch.resolve(ctx)
 
   if not launch_config then
     notify(launch_err, vim.log.levels.ERROR)

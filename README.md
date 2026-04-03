@@ -10,6 +10,7 @@ This project currently has:
 - a `:checkhealth cplug` healthcheck
 - a core orchestration pipeline for detect -> optional scaffold -> build -> launch resolution
 - a shared backend contract for future language implementations
+- shared `.vscode/launch.json` resolution in the main pipeline
 
 Language backends and DAP startup are still being added in later iterations, so the command currently reports when no supported project backend is available.
 

@@ -5,7 +5,6 @@ local backend_modules = {}
 local required_methods = {
   "detect",
   "build",
-  "resolve_launch",
 }
 
 local function validate(backend)

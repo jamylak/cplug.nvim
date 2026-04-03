@@ -21,6 +21,7 @@ This version provides:
 - optional default keymap wiring
 - `:checkhealth cplug`
 - a core orchestration flow for detection, scaffolding, build, and launch resolution
+- shared `.vscode/launch.json` resolution in the main pipeline
 
 Language backends and DAP startup are not implemented yet.
 
