@@ -2,14 +2,16 @@
 
 `cplug.nvim` aims to make `<leader>c` the compile-and-debug entrypoint for small local projects.
 
-This first iteration only establishes the plugin skeleton:
+This project currently has:
 
 - a public `setup()` API
 - a `:CPlugCompileDebug` user command
 - optional default keymaps
 - a `:checkhealth cplug` healthcheck
+- a core orchestration pipeline for detect -> optional scaffold -> build -> launch resolution
+- a shared backend contract for future language implementations
 
-The compile/build/debug orchestration described in [PLAN.md](./PLAN.md) will land in later iterations.
+Language backends and DAP startup are still being added in later iterations, so the command currently reports when no supported project backend is available.
 
 ## Setup
 

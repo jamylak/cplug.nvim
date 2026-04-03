@@ -14,14 +14,15 @@ INTRODUCTION                                                   *cplug-intro*
 cplug.nvim is intended to make `<leader>c` the compile-and-debug entrypoint for
 small local projects.
 
-This initial version only provides the plugin skeleton:
+This version provides:
 
 - `require("cplug").setup()`
 - `:CPlugCompileDebug`
 - optional default keymap wiring
 - `:checkhealth cplug`
+- a core orchestration flow for detection, scaffolding, build, and launch resolution
 
-The compile/build/debug pipeline is not implemented yet.
+Language backends and DAP startup are not implemented yet.
 
 ==============================================================================
 SETUP                                                           *cplug-setup*
@@ -58,7 +59,10 @@ lazy.nvim example: >
 COMMANDS                                                     *cplug-commands*
 
 :CPlugCompileDebug
-        Placeholder entrypoint for the future compile/build/debug flow.
+        Runs the core compile/build/debug orchestration flow.
+
+        In the current iteration this will warn when no supported backend is
+        available for the current project.
 
 ==============================================================================
 HEALTH                                                         *cplug-health*

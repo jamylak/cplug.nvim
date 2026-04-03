@@ -1,5 +1,6 @@
 local config = require("cplug.config")
 local commands = require("cplug.commands")
+local orchestrator = require("cplug.orchestrator")
 
 local M = {}
 
@@ -17,11 +18,7 @@ function M.config()
 end
 
 function M.compile_and_debug()
-  vim.notify(
-    "cplug.nvim: compile/debug orchestration is not implemented yet",
-    vim.log.levels.INFO,
-    { title = "cplug.nvim" }
-  )
+  return orchestrator.run(M._config)
 end
 
 return M
