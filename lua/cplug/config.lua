@@ -6,6 +6,10 @@ local defaults = {
   keymaps = {
     compile_debug = "<leader>c",
   },
+  launch = {
+    path = ".vscode/launch.json",
+    configuration = nil,
+  },
 }
 
 function M.defaults()

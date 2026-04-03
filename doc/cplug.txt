@@ -41,6 +41,16 @@ Disable the default keymap: >
   EOF
 <
 
+Select a specific `launch.json` configuration by name: >
+  lua << EOF
+  require("cplug").setup({
+    launch = {
+      configuration = "Debug current file",
+    },
+  })
+  EOF
+<
+
 lazy.nvim example: >
   {
     "jamylak/cplug.nvim",
@@ -72,6 +82,14 @@ Run `:checkhealth cplug` to confirm that:
 - cplug.nvim is installed
 - `nvim-dap` is available
 - `nvim-dap-ui` is available
+
+==============================================================================
+LAUNCH CONFIGS
+
+The shared launch layer expects `.vscode/launch.json` by default.
+
+You can select a specific configuration by name through
+`require("cplug").setup({ launch = { configuration = "..." } })`.
 
 ==============================================================================
 vim:tw=78:ts=8:noet:ft=help:norl:

@@ -27,6 +27,16 @@ require("cplug").setup({
 })
 ```
 
+Select a specific VS Code launch configuration by name:
+
+```lua
+require("cplug").setup({
+  launch = {
+    configuration = "Debug current file",
+  },
+})
+```
+
 ## lazy.nvim
 
 ```lua
@@ -58,3 +68,7 @@ Run:
 ```
 
 The healthcheck warns when `nvim-dap` or `nvim-dap-ui` are missing from `runtimepath`.
+
+## Launch Configs
+
+The shared launch layer now expects `.vscode/launch.json` by default and can select a named configuration via `opts.launch.configuration`.
