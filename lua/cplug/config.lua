@@ -9,6 +9,7 @@ local defaults = {
   launch = {
     path = ".vscode/launch.json",
     configuration = nil,
+    on_missing = "prompt",
   },
 }
 

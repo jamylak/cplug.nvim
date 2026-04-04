@@ -39,4 +39,19 @@ function M.build(_, project)
   }
 end
 
+function M.default_launch_config()
+  return {
+    version = "0.2.0",
+    configurations = {
+      {
+        name = "Debug current file",
+        type = "python",
+        request = "launch",
+        program = "${file}",
+        console = "integratedTerminal",
+      },
+    },
+  }
+end
+
 return M

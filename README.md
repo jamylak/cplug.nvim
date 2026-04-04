@@ -45,6 +45,16 @@ require("cplug").setup({
 })
 ```
 
+Auto-generate a minimal `launch.json` when one is missing:
+
+```lua
+require("cplug").setup({
+  launch = {
+    on_missing = "always",
+  },
+})
+```
+
 ## lazy.nvim
 
 ```lua
@@ -79,4 +89,8 @@ The healthcheck warns when `nvim-dap` or `nvim-dap-ui` are missing from `runtime
 
 ## Launch Configs
 
-The shared launch layer now expects `.vscode/launch.json` by default and can select a named configuration via `opts.launch.configuration`.
+The shared launch layer expects `.vscode/launch.json` by default, can select a named configuration via `opts.launch.configuration`, and can handle missing files with `opts.launch.on_missing`:
+
+- `"prompt"` prompts before generating a backend-specific launch file
+- `"always"` generates automatically
+- `"never"` returns an error

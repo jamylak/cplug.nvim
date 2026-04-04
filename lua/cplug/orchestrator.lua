@@ -58,7 +58,7 @@ function M.run(config)
     return nil, build_err
   end
 
-  local launch_config, launch_err = launch.resolve(ctx)
+  local launch_config, launch_err = launch.resolve(ctx, backend, project, build_result)
 
   if not launch_config then
     notify(launch_err, vim.log.levels.ERROR)
