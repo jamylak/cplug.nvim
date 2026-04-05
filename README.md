@@ -21,6 +21,7 @@ The remaining work is language expansion and adapter-specific polish.
 Current backend scope:
 
 - C/C++ detection for existing `CMakeLists.txt` projects with Debug builds in `build`
+- missing C/C++ `launch.json` generation from built CMake executables
 - Python detection for existing projects via `pyproject.toml`, `requirements.txt`, or top-level `*.py`
 - debug launch resolution through `.vscode/launch.json`
 - no C/C++ scaffolding yet

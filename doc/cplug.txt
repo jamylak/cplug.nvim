@@ -66,6 +66,9 @@ Auto-generate a minimal `launch.json` when one is missing: >
   EOF
 <
 
+For existing CMake projects, generated launch configs target the first built
+executable found in the configured build directory.
+
 Disable automatic `dap-ui` opening: >
   lua << EOF
   require("cplug").setup({
