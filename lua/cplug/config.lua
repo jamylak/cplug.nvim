@@ -20,6 +20,9 @@ local defaults = {
   dap = {
     open_ui = true,
   },
+  c_family = {
+    build_dir = "build",
+  },
 }
 
 function M.defaults()
