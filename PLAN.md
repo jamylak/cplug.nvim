@@ -51,6 +51,7 @@ Treat the plugin as a thin orchestrator with a few clean subsystems:
 - v1 assumes `nvim-dap`, `nvim-dap-ui`, and language-specific debuggers/adapters are already installed.
 - For empty C/C++ repos, scaffolding should be **prompted**, not silently generated.
 - Rust support is for existing Cargo projects; Python support focuses on existing script/module-style projects.
+- Python support should grow to account for common environment runners such as `uv` when resolving interpreters and launch behavior.
 - The plugin should keep startup cost near zero by doing detection/build work only after the first mapped action.
 - The first end-to-end debug proof should target Python because it is the cheapest path to a real, automated debugging test; once that harness exists, C/C++ and Rust coverage can be layered in behind it.
 - Favor a pure-Lua implementation unless a very small external helper becomes clearly necessary.
