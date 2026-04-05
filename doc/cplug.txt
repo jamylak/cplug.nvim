@@ -24,8 +24,9 @@ This version provides:
 - shared `.vscode/launch.json` resolution in the main pipeline
 - a minimal Python backend for existing projects
 - `nvim-dap` / `nvim-dap-ui` startup from the resolved launch config
+- optional default DAP stepping and breakpoint keymaps
 
-Language coverage and stepping keymaps are still being built out.
+Language coverage is still being built out.
 
 ==============================================================================
 SETUP                                                           *cplug-setup*
@@ -74,6 +75,15 @@ Disable automatic `dap-ui` opening: >
   EOF
 <
 
+Default stepping keymaps:
+
+- `<leader>gc` continue
+- `<leader>gx` terminate
+- `<leader>gn` step over
+- `<leader>gi` step into
+- `<leader>go` step out
+- `<leader>gb` toggle breakpoint
+
 lazy.nvim example: >
   {
     "jamylak/cplug.nvim",
@@ -118,6 +128,18 @@ When the file is missing, `launch.on_missing` controls behavior:
 - `"prompt"` prompts before generating a backend-specific file
 - `"always"` generates automatically
 - `"never"` returns an error
+
+==============================================================================
+DAP KEYMAPS
+
+When `default_keymaps` is enabled, cplug also registers:
+
+- `<leader>gc` to continue
+- `<leader>gx` to terminate
+- `<leader>gn` to step over
+- `<leader>gi` to step into
+- `<leader>go` to step out
+- `<leader>gb` to toggle a breakpoint
 
 ==============================================================================
 vim:tw=78:ts=8:noet:ft=help:norl:

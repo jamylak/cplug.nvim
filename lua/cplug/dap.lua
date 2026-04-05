@@ -53,4 +53,44 @@ function M.start(ctx, launch_config)
   }
 end
 
+local function run_action(method, package_name)
+  local dap, dap_err = require_dependency("dap", package_name or "mfussenegger/nvim-dap")
+
+  if not dap then
+    return nil, dap_err
+  end
+
+  if type(dap[method]) ~= "function" then
+    return nil, ("Installed `dap` module does not support `%s`"):format(method)
+  end
+
+  dap[method]()
+
+  return true
+end
+
+function M.continue()
+  return run_action("continue")
+end
+
+function M.terminate()
+  return run_action("terminate")
+end
+
+function M.step_over()
+  return run_action("step_over")
+end
+
+function M.step_into()
+  return run_action("step_into")
+end
+
+function M.step_out()
+  return run_action("step_out")
+end
+
+function M.toggle_breakpoint()
+  return run_action("toggle_breakpoint")
+end
+
 return M

@@ -5,6 +5,12 @@ local defaults = {
   default_keymaps = true,
   keymaps = {
     compile_debug = "<leader>c",
+    continue = "<leader>gc",
+    terminate = "<leader>gx",
+    step_over = "<leader>gn",
+    step_into = "<leader>gi",
+    step_out = "<leader>go",
+    toggle_breakpoint = "<leader>gb",
   },
   launch = {
     path = ".vscode/launch.json",
