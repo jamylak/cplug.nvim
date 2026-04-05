@@ -11,6 +11,7 @@ This project currently has:
 - a core orchestration pipeline for detect -> optional scaffold -> build -> launch resolution
 - a shared backend contract for future language implementations
 - shared `.vscode/launch.json` resolution in the main pipeline
+- an existing-project CMake backend for C/C++
 - a minimal Python backend for existing projects
 - `nvim-dap` / `nvim-dap-ui` startup from the resolved launch config
 - optional default DAP stepping and breakpoint keymaps
@@ -19,8 +20,10 @@ The remaining work is language expansion and adapter-specific polish.
 
 Current backend scope:
 
+- C/C++ detection for existing `CMakeLists.txt` projects with Debug builds in `build`
 - Python detection for existing projects via `pyproject.toml`, `requirements.txt`, or top-level `*.py`
 - debug launch resolution through `.vscode/launch.json`
+- no C/C++ scaffolding yet
 - no Python scaffolding yet
 
 ## Setup
@@ -63,6 +66,16 @@ Disable automatic `dap-ui` opening:
 require("cplug").setup({
   dap = {
     open_ui = false,
+  },
+})
+```
+
+Override the default CMake build directory:
+
+```lua
+require("cplug").setup({
+  c_family = {
+    build_dir = "build",
   },
 })
 ```

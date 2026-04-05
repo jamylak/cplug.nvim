@@ -22,6 +22,7 @@ This version provides:
 - `:checkhealth cplug`
 - a core orchestration flow for detection, scaffolding, build, and launch resolution
 - shared `.vscode/launch.json` resolution in the main pipeline
+- an existing-project CMake backend for C/C++
 - a minimal Python backend for existing projects
 - `nvim-dap` / `nvim-dap-ui` startup from the resolved launch config
 - optional default DAP stepping and breakpoint keymaps
@@ -70,6 +71,16 @@ Disable automatic `dap-ui` opening: >
   require("cplug").setup({
     dap = {
       open_ui = false,
+    },
+  })
+  EOF
+<
+
+Override the default CMake build directory: >
+  lua << EOF
+  require("cplug").setup({
+    c_family = {
+      build_dir = "build",
     },
   })
   EOF
