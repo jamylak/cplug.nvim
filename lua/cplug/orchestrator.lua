@@ -1,4 +1,5 @@
 local backends = require("cplug.backends")
+local dap = require("cplug.dap")
 local launch = require("cplug.launch")
 
 local M = {}
@@ -65,14 +66,19 @@ function M.run(config)
     return nil, launch_err
   end
 
-  notify(
-    ("Resolved `%s` project. DAP startup will land in the next iteration."):format(backend.id),
-    vim.log.levels.INFO
-  )
+  local dap_result, dap_err = dap.start(ctx, launch_config)
+
+  if not dap_result then
+    notify(dap_err, vim.log.levels.ERROR)
+    return nil, dap_err
+  end
+
+  notify(("Started `%s` debug session via `%s`"):format(backend.id, dap_result.adapter), vim.log.levels.INFO)
 
   return {
     backend = backend.id,
     build = build_result,
+    dap = dap_result,
     launch = launch_config,
     project = project,
   }

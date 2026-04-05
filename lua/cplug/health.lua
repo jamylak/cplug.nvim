@@ -16,7 +16,7 @@ end
 
 function M.check()
   vim.health.start("cplug.nvim")
-  vim.health.info("Plugin skeleton is installed. Compile/build/debug orchestration is not implemented yet.")
+  vim.health.info("Launch resolution and DAP startup are available. Language coverage is still limited.")
 
   check_dependency("dap", "Expected `mfussenegger/nvim-dap` to be available on `runtimepath`.")
   check_dependency("dapui", "Expected `rcarriga/nvim-dap-ui` to be available on `runtimepath`.")

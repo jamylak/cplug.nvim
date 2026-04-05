@@ -12,8 +12,9 @@ This project currently has:
 - a shared backend contract for future language implementations
 - shared `.vscode/launch.json` resolution in the main pipeline
 - a minimal Python backend for existing projects
+- `nvim-dap` / `nvim-dap-ui` startup from the resolved launch config
 
-DAP startup and the other language backends are still being added in later iterations.
+The remaining work is language expansion, adapter-specific polish, and stepping keymap ergonomics.
 
 Current backend scope:
 
@@ -55,6 +56,16 @@ require("cplug").setup({
 })
 ```
 
+Disable automatic `dap-ui` opening:
+
+```lua
+require("cplug").setup({
+  dap = {
+    open_ui = false,
+  },
+})
+```
+
 ## lazy.nvim
 
 ```lua
@@ -86,6 +97,10 @@ Run:
 ```
 
 The healthcheck warns when `nvim-dap` or `nvim-dap-ui` are missing from `runtimepath`.
+
+## DAP Startup
+
+Once a backend and launch config are resolved, cplug passes the selected configuration to `nvim-dap` and opens `nvim-dap-ui` by default.
 
 ## Launch Configs
 

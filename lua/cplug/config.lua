@@ -11,6 +11,9 @@ local defaults = {
     configuration = nil,
     on_missing = "prompt",
   },
+  dap = {
+    open_ui = true,
+  },
 }
 
 function M.defaults()

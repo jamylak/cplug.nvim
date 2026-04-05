@@ -23,8 +23,9 @@ This version provides:
 - a core orchestration flow for detection, scaffolding, build, and launch resolution
 - shared `.vscode/launch.json` resolution in the main pipeline
 - a minimal Python backend for existing projects
+- `nvim-dap` / `nvim-dap-ui` startup from the resolved launch config
 
-Language backends and DAP startup are not implemented yet.
+Language coverage and stepping keymaps are still being built out.
 
 ==============================================================================
 SETUP                                                           *cplug-setup*
@@ -63,6 +64,16 @@ Auto-generate a minimal `launch.json` when one is missing: >
   EOF
 <
 
+Disable automatic `dap-ui` opening: >
+  lua << EOF
+  require("cplug").setup({
+    dap = {
+      open_ui = false,
+    },
+  })
+  EOF
+<
+
 lazy.nvim example: >
   {
     "jamylak/cplug.nvim",
@@ -82,9 +93,8 @@ COMMANDS                                                     *cplug-commands*
 
 :CPlugCompileDebug
         Runs the core compile/build/debug orchestration flow.
-
-        In the current iteration this will warn when no supported backend is
-        available for the current project.
+        When resolution succeeds, it starts `nvim-dap` and opens
+        `nvim-dap-ui` by default.
 
 ==============================================================================
 HEALTH                                                         *cplug-health*
