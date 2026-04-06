@@ -42,6 +42,7 @@ Treat the plugin as a thin orchestrator with a few clean subsystems:
    Detect Python projects, resolve interpreter/program defaults, generate `launch.json` when needed, and run a debug session without adding packaging assumptions.
 8. **Automated test harness**
    Add unit tests for parsing/detection, integration tests for orchestration, and at least one real end-to-end Python debugging fixture that proves the plugin can drive a debug session through `nvim-dap`.
+   Include an early fixture that locks in nested Python source discovery and ignored-directory behavior (for example `src/pkg/app.py` versus `.venv` content).
 9. **Coverage expansion**
    Add fixture-based tests for C/C++ and Rust flows, keeping the suite deterministic and reviewable while expanding real-toolchain coverage where practical.
 
