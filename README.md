@@ -7,6 +7,7 @@ This project currently has:
 - a public `setup()` API
 - a `:CPlugCompileDebug` user command
 - a `:CPlugCMakeConfigure` user command
+- a `:CPlugCMakeBuildOnce` user command
 - optional default keymaps
 - a `:checkhealth cplug` healthcheck
 - a core orchestration pipeline for detect -> optional scaffold -> build -> launch resolution
@@ -186,3 +187,13 @@ Run:
 ```
 
 This reuses the CMake backend detection and scaffolding flow, then runs a Debug configure step into the configured build directory without starting DAP.
+
+## CMake Build Once
+
+Run:
+
+```vim
+:CPlugCMakeBuildOnce
+```
+
+This reuses the same CMake detection and scaffolding flow, then performs a one-off Debug build into the configured build directory without starting DAP.

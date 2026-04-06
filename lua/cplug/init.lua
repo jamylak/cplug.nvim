@@ -27,6 +27,10 @@ function M.cmake_configure()
   return cmake.configure(M._config)
 end
 
+function M.cmake_build_once()
+  return cmake.build_once(M._config)
+end
+
 function M.continue()
   return dap.continue()
 end

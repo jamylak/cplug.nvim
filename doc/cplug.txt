@@ -19,6 +19,7 @@ This version provides:
 - `require("cplug").setup()`
 - `:CPlugCompileDebug`
 - `:CPlugCMakeConfigure`
+- `:CPlugCMakeBuildOnce`
 - optional default keymap wiring
 - `:checkhealth cplug`
 - a core orchestration flow for detection, scaffolding, build, and launch resolution
@@ -149,6 +150,10 @@ COMMANDS                                                     *cplug-commands*
 :CPlugCMakeConfigure
         Runs CMake detection and any needed scaffolding, then configures
         the current project in Debug mode without starting DAP.
+
+:CPlugCMakeBuildOnce
+        Runs CMake detection and any needed scaffolding, then builds the
+        current project in Debug mode without starting DAP.
 
 ==============================================================================
 HEALTH                                                         *cplug-health*

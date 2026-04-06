@@ -27,8 +27,7 @@ local function run_step(method, ...)
   return result, secondary
 end
 
-function M.configure(config)
-  local ctx = build_context(config)
+local function resolve_project(ctx)
   local project = backend.detect(ctx)
 
   if not project then
@@ -48,6 +47,17 @@ function M.configure(config)
     project = scaffolded_project
   end
 
+  return project
+end
+
+function M.configure(config)
+  local ctx = build_context(config)
+  local project, project_err = resolve_project(ctx)
+
+  if not project then
+    return nil, project_err
+  end
+
   local configure_result, configure_err = run_step("configure", ctx, project)
 
   if not configure_result then
@@ -60,6 +70,30 @@ function M.configure(config)
   return {
     backend = backend.id,
     configure = configure_result,
+    project = project,
+  }
+end
+
+function M.build_once(config)
+  local ctx = build_context(config)
+  local project, project_err = resolve_project(ctx)
+
+  if not project then
+    return nil, project_err
+  end
+
+  local build_result, build_err = run_step("build", ctx, project)
+
+  if not build_result then
+    notify(build_err, vim.log.levels.ERROR)
+    return nil, build_err
+  end
+
+  notify(("Built `%s` project in `%s`"):format(backend.id, build_result.build_dir), vim.log.levels.INFO)
+
+  return {
+    backend = backend.id,
+    build = build_result,
     project = project,
   }
 end
