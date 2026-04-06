@@ -136,6 +136,14 @@ Run:
 
 The healthcheck warns when `nvim-dap` or `nvim-dap-ui` are missing from `runtimepath`.
 
+## Tests
+
+Run the current regression scripts with:
+
+```sh
+make test
+```
+
 ## DAP Startup
 
 Once a backend and launch config are resolved, cplug passes the selected configuration to `nvim-dap` and opens `nvim-dap-ui` by default.
