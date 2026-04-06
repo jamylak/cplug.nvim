@@ -87,6 +87,29 @@ local function detect_project_languages(source_files)
   return ordered
 end
 
+local function repo_is_empty(root, build_dir)
+  local fs = vim.uv.fs_scandir(root)
+  local build_dir_name = vim.fs.basename(build_dir)
+
+  if not fs then
+    return false
+  end
+
+  while true do
+    local name = vim.uv.fs_scandir_next(fs)
+
+    if not name then
+      break
+    end
+
+    if not ignored_dirs[name] and name ~= build_dir_name then
+      return false
+    end
+  end
+
+  return true
+end
+
 local function find_source_files(root, build_dir)
   local files = {}
   local build_dir_name = vim.fs.basename(build_dir)
@@ -205,6 +228,60 @@ local function render_clang_format()
   }
 end
 
+local function render_starter_source(language)
+  if language == "CXX" then
+    return {
+      "#include <iostream>",
+      "",
+      "int main() {",
+      '  std::cout << "hello" << std::endl;',
+      "  return 0;",
+      "}",
+    }
+  end
+
+  return {
+    "#include <stdio.h>",
+    "",
+    "int main(void) {",
+    '  puts("hello");',
+    "  return 0;",
+    "}",
+  }
+end
+
+local function scaffold_empty_project(project)
+  local choice = vim.fn.confirm(
+    ("Scaffold an empty project at `%s` as C or C++?"):format(project.root),
+    "&C\n&C++\n&Cancel",
+    1
+  )
+
+  if choice ~= 1 and choice ~= 2 then
+    return nil, "CMake scaffolding cancelled"
+  end
+
+  local language = choice == 1 and "C" or "CXX"
+  local extension = language == "C" and "c" or "cpp"
+  local source_dir = vim.fs.joinpath(project.root, "src")
+  local source_path = vim.fs.joinpath(source_dir, ("main.%s"):format(extension))
+
+  if vim.fn.isdirectory(source_dir) == 0 then
+    vim.fn.mkdir(source_dir, "p")
+  end
+
+  local write_ok = vim.fn.writefile(render_starter_source(language), source_path)
+
+  if write_ok ~= 0 then
+    return nil, ("Failed to write `%s`"):format(source_path)
+  end
+
+  project.languages = { language }
+  project.sources = { source_path }
+
+  return project
+end
+
 function M.detect(ctx)
   local cmake_lists = vim.fs.joinpath(ctx.cwd, "CMakeLists.txt")
   local clang_format = vim.fs.joinpath(ctx.cwd, ".clang-format")
@@ -224,7 +301,22 @@ function M.detect(ctx)
   local source_files = find_source_files(ctx.cwd, build_dir)
 
   if vim.tbl_isempty(source_files) then
-    return nil
+    if not repo_is_empty(ctx.cwd, build_dir) then
+      return nil
+    end
+
+    return {
+      kind = "cmake",
+      root = ctx.cwd,
+      cmake_lists = cmake_lists,
+      clang_format = clang_format,
+      build_dir = build_dir,
+      config = ctx.config.c_family,
+      needs_scaffold = true,
+      empty_repo = true,
+      sources = {},
+      target_name = sanitize_identifier(path_basename(ctx.cwd)),
+    }
   end
 
   local languages = detect_project_languages(source_files)
@@ -244,14 +336,22 @@ function M.detect(ctx)
 end
 
 function M.scaffold(_, project)
-  local choice = vim.fn.confirm(
-    ("Generate minimal C/C++ scaffolding at `%s`?"):format(project.root),
-    "&Generate\n&Cancel",
-    1
-  )
+  if project.empty_repo then
+    local scaffolded_project, scaffold_err = scaffold_empty_project(project)
 
-  if choice ~= 1 then
-    return nil, "CMake scaffolding cancelled"
+    if not scaffolded_project then
+      return nil, scaffold_err
+    end
+  else
+    local choice = vim.fn.confirm(
+      ("Generate minimal C/C++ scaffolding at `%s`?"):format(project.root),
+      "&Generate\n&Cancel",
+      1
+    )
+
+    if choice ~= 1 then
+      return nil, "CMake scaffolding cancelled"
+    end
   end
 
   local write_ok = vim.fn.writefile(render_cmake_lists(project), project.cmake_lists)
