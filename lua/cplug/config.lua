@@ -23,6 +23,9 @@ local defaults = {
   c_family = {
     build_dir = "build",
   },
+  python = {
+    interpreter = nil,
+  },
 }
 
 function M.defaults()
