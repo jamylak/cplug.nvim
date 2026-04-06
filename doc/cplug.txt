@@ -22,7 +22,7 @@ This version provides:
 - `:checkhealth cplug`
 - a core orchestration flow for detection, scaffolding, build, and launch resolution
 - shared `.vscode/launch.json` resolution in the main pipeline
-- an existing-project CMake backend for C/C++
+- a CMake backend for existing and source-only C/C++ projects
 - an existing-project Cargo backend for Rust
 - a minimal Python backend for existing projects
 - Python launch generation with interpreter defaults from local envs or PATH
@@ -69,7 +69,8 @@ Auto-generate a minimal `launch.json` when one is missing: >
   EOF
 <
 
-For existing CMake projects, generated launch configs target the first built
+For existing CMake projects, and for source-only C/C++ repos after generating a
+minimal `CMakeLists.txt`, generated launch configs target the first built
 executable found in the configured build directory.
 
 Disable automatic `dap-ui` opening: >

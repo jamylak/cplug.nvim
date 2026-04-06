@@ -2,6 +2,22 @@ local M = {
   id = "cmake",
 }
 
+local source_languages = {
+  c = "C",
+  cc = "CXX",
+  cpp = "CXX",
+  cxx = "CXX",
+}
+
+local ignored_dirs = {
+  [".git"] = true,
+  [".vscode"] = true,
+  ["build"] = true,
+  ["target"] = true,
+  [".venv"] = true,
+  ["venv"] = true,
+}
+
 local function file_exists(path)
   return vim.fn.filereadable(path) == 1
 end
@@ -10,8 +26,30 @@ local function is_executable(path)
   return vim.fn.executable(path) == 1 and vim.fn.isdirectory(path) == 0
 end
 
+local function path_extension(path)
+  return path:match("%.([^.]+)$")
+end
+
 local function path_basename(path)
   return vim.fs.basename(path)
+end
+
+local function sanitize_identifier(name)
+  local value = name:gsub("[^%w_]", "_")
+
+  if value == "" then
+    value = "cplug_app"
+  end
+
+  if value:match("^[0-9]") then
+    value = ("_%s"):format(value)
+  end
+
+  return value
+end
+
+local function relative_path(root, path)
+  return path:sub(#root + 2)
 end
 
 local function run_command(args, cwd)
@@ -23,6 +61,66 @@ local function run_command(args, cwd)
   end
 
   return result
+end
+
+local function detect_project_languages(source_files)
+  local detected = {}
+
+  for _, path in ipairs(source_files) do
+    local language = source_languages[path_extension(path)]
+
+    if language then
+      detected[language] = true
+    end
+  end
+
+  local ordered = {}
+
+  if detected.C then
+    table.insert(ordered, "C")
+  end
+
+  if detected.CXX then
+    table.insert(ordered, "CXX")
+  end
+
+  return ordered
+end
+
+local function find_source_files(root, build_dir)
+  local files = {}
+  local build_dir_name = vim.fs.basename(build_dir)
+
+  local function scan(dir)
+    local fs = vim.uv.fs_scandir(dir)
+
+    if not fs then
+      return
+    end
+
+    while true do
+      local name, kind = vim.uv.fs_scandir_next(fs)
+
+      if not name then
+        break
+      end
+
+      local path = vim.fs.joinpath(dir, name)
+
+      if kind == "directory" then
+        if not ignored_dirs[name] and name ~= build_dir_name then
+          scan(path)
+        end
+      elseif kind == "file" and source_languages[path_extension(name)] then
+        table.insert(files, path)
+      end
+    end
+  end
+
+  scan(root)
+  table.sort(files)
+
+  return files
 end
 
 local function find_binaries(build_dir)
@@ -67,19 +165,89 @@ local function find_binaries(build_dir)
   return not vim.tbl_isempty(preferred) and preferred or fallback
 end
 
+local function render_cmake_lists(project)
+  local lines = {
+    "cmake_minimum_required(VERSION 3.16)",
+    ("project(%s LANGUAGES %s)"):format(project.target_name, table.concat(project.languages, " ")),
+    "",
+    "set(CMAKE_EXPORT_COMPILE_COMMANDS ON)",
+  }
+
+  if vim.list_contains(project.languages, "C") then
+    table.insert(lines, "set(CMAKE_C_STANDARD 11)")
+    table.insert(lines, "set(CMAKE_C_STANDARD_REQUIRED ON)")
+  end
+
+  if vim.list_contains(project.languages, "CXX") then
+    table.insert(lines, "set(CMAKE_CXX_STANDARD 17)")
+    table.insert(lines, "set(CMAKE_CXX_STANDARD_REQUIRED ON)")
+  end
+
+  table.insert(lines, "")
+  table.insert(lines, ("add_executable(%s"):format(project.target_name))
+
+  for _, source in ipairs(project.sources) do
+    table.insert(lines, ("  %s"):format(relative_path(project.root, source)))
+  end
+
+  table.insert(lines, ")")
+
+  return lines
+end
+
 function M.detect(ctx)
   local cmake_lists = vim.fs.joinpath(ctx.cwd, "CMakeLists.txt")
+  local build_dir = vim.fs.joinpath(ctx.cwd, ctx.config.c_family.build_dir)
 
-  if not file_exists(cmake_lists) then
+  if file_exists(cmake_lists) then
+    return {
+      kind = "cmake",
+      root = ctx.cwd,
+      cmake_lists = cmake_lists,
+      build_dir = build_dir,
+    }
+  end
+
+  local source_files = find_source_files(ctx.cwd, build_dir)
+
+  if vim.tbl_isempty(source_files) then
     return nil
   end
+
+  local languages = detect_project_languages(source_files)
 
   return {
     kind = "cmake",
     root = ctx.cwd,
     cmake_lists = cmake_lists,
-    build_dir = vim.fs.joinpath(ctx.cwd, ctx.config.c_family.build_dir),
+    build_dir = build_dir,
+    languages = languages,
+    needs_scaffold = true,
+    sources = source_files,
+    target_name = sanitize_identifier(path_basename(ctx.cwd)),
   }
+end
+
+function M.scaffold(_, project)
+  local choice = vim.fn.confirm(
+    ("Generate a minimal CMakeLists.txt at `%s`?"):format(project.cmake_lists),
+    "&Generate\n&Cancel",
+    1
+  )
+
+  if choice ~= 1 then
+    return nil, "CMake scaffolding cancelled"
+  end
+
+  local write_ok = vim.fn.writefile(render_cmake_lists(project), project.cmake_lists)
+
+  if write_ok ~= 0 then
+    return nil, ("Failed to write `%s`"):format(project.cmake_lists)
+  end
+
+  project.needs_scaffold = nil
+
+  return project
 end
 
 function M.build(_, project)
