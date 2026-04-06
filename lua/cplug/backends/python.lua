@@ -10,8 +10,48 @@ local function is_executable(path)
   return vim.fn.executable(path) == 1 and vim.fn.isdirectory(path) == 0
 end
 
+local ignored_dirs = {
+  [".git"] = true,
+  [".venv"] = true,
+  ["venv"] = true,
+  ["__pycache__"] = true,
+  ["build"] = true,
+  ["target"] = true,
+}
+
 local function find_python_files(cwd)
-  return vim.fn.globpath(cwd, "*.py", false, true)
+  local files = {}
+
+  local function scan(dir)
+    local fs = vim.uv.fs_scandir(dir)
+
+    if not fs then
+      return
+    end
+
+    while true do
+      local name, kind = vim.uv.fs_scandir_next(fs)
+
+      if not name then
+        break
+      end
+
+      local path = vim.fs.joinpath(dir, name)
+
+      if kind == "directory" then
+        if not ignored_dirs[name] then
+          scan(path)
+        end
+      elseif kind == "file" and name:sub(-3) == ".py" then
+        table.insert(files, path)
+      end
+    end
+  end
+
+  scan(cwd)
+  table.sort(files)
+
+  return files
 end
 
 local function resolve_interpreter(ctx)

@@ -26,6 +26,7 @@ This version provides:
 - an existing-project Cargo backend for Rust
 - a minimal Python backend for existing projects
 - Python launch generation with interpreter defaults from local envs or PATH
+- Python file discovery across common source layouts
 - `nvim-dap` / `nvim-dap-ui` startup from the resolved launch config
 - optional default DAP stepping and breakpoint keymaps
 
