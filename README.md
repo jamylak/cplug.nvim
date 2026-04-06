@@ -12,6 +12,7 @@ This project currently has:
 - a shared backend contract for future language implementations
 - shared `.vscode/launch.json` resolution in the main pipeline
 - an existing-project CMake backend for C/C++
+- an existing-project Cargo backend for Rust
 - a minimal Python backend for existing projects
 - `nvim-dap` / `nvim-dap-ui` startup from the resolved launch config
 - optional default DAP stepping and breakpoint keymaps
@@ -22,6 +23,8 @@ Current backend scope:
 
 - C/C++ detection for existing `CMakeLists.txt` projects with Debug builds in `build`
 - missing C/C++ `launch.json` generation from built CMake executables
+- Rust detection for existing `Cargo.toml` projects with debug builds in `target/debug`
+- missing Rust `launch.json` generation from the first Cargo binary target
 - Python detection for existing projects via `pyproject.toml`, `requirements.txt`, or top-level `*.py`
 - debug launch resolution through `.vscode/launch.json`
 - no C/C++ scaffolding yet

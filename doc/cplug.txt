@@ -23,6 +23,7 @@ This version provides:
 - a core orchestration flow for detection, scaffolding, build, and launch resolution
 - shared `.vscode/launch.json` resolution in the main pipeline
 - an existing-project CMake backend for C/C++
+- an existing-project Cargo backend for Rust
 - a minimal Python backend for existing projects
 - `nvim-dap` / `nvim-dap-ui` startup from the resolved launch config
 - optional default DAP stepping and breakpoint keymaps
