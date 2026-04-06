@@ -31,7 +31,7 @@ EOF
 nvim --headless -u NONE -i NONE \
   --cmd "set rtp+=$ROOT_DIR" \
   --cmd "cd $TEST_DIR" \
-  "+lua package.loaded['dap'] = { run = function(cfg) vim.g.cplug_python_layout = cfg end }; package.loaded['dapui'] = { open = function() end }; require('cplug').setup({ launch = { on_missing = 'always' } }); local result, err = require('cplug').compile_and_debug(); assert(result, err); assert(result.backend == 'python'); assert(vim.fn.filereadable('.vscode/launch.json') == 1); assert(vim.g.cplug_python_layout.program == (vim.fn.getcwd() .. '/src/pkg/app.py'):gsub('^/tmp/', '/private/tmp/')); local launch = vim.fn.readfile('.vscode/launch.json'); assert(#launch == 1); assert(not launch[1]:find('ignored.py', 1, true))" \
+  "+lua local ok, err = pcall(function() package.loaded['dap'] = { run = function(cfg) vim.g.cplug_python_layout = cfg end }; package.loaded['dapui'] = { open = function() end }; require('cplug').setup({ launch = { on_missing = 'always' } }); local result, run_err = require('cplug').compile_and_debug(); assert(result, run_err); assert(result.backend == 'python'); assert(vim.fn.filereadable('.vscode/launch.json') == 1); assert(vim.g.cplug_python_layout.program == (vim.fn.getcwd() .. '/src/pkg/app.py'):gsub('^/tmp/', '/private/tmp/')); local launch = vim.fn.readfile('.vscode/launch.json'); assert(#launch == 1); assert(not launch[1]:find('ignored.py', 1, true)) end); if not ok then vim.api.nvim_err_writeln(err); vim.cmd('cquit 1') end" \
   +qall
 
 echo "nested python layout test passed"
