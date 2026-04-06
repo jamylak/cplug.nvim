@@ -1,4 +1,5 @@
 local config = require("cplug.config")
+local cmake = require("cplug.cmake")
 local commands = require("cplug.commands")
 local dap = require("cplug.dap")
 local orchestrator = require("cplug.orchestrator")
@@ -20,6 +21,10 @@ end
 
 function M.compile_and_debug()
   return orchestrator.run(M._config)
+end
+
+function M.cmake_configure()
+  return cmake.configure(M._config)
 end
 
 function M.continue()

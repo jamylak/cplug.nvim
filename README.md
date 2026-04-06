@@ -6,6 +6,7 @@ This project currently has:
 
 - a public `setup()` API
 - a `:CPlugCompileDebug` user command
+- a `:CPlugCMakeConfigure` user command
 - optional default keymaps
 - a `:checkhealth cplug` healthcheck
 - a core orchestration pipeline for detect -> optional scaffold -> build -> launch resolution
@@ -175,3 +176,13 @@ The shared launch layer expects `.vscode/launch.json` by default, can select a n
 - `"prompt"` prompts before generating a backend-specific launch file
 - `"always"` generates automatically
 - `"never"` returns an error
+
+## CMake Configure
+
+Run:
+
+```vim
+:CPlugCMakeConfigure
+```
+
+This reuses the CMake backend detection and scaffolding flow, then runs a Debug configure step into the configured build directory without starting DAP.

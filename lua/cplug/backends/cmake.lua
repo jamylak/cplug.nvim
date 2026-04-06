@@ -373,7 +373,7 @@ function M.scaffold(_, project)
   return project
 end
 
-function M.build(_, project)
+function M.configure(_, project)
   local configure_args = {
     "cmake",
     "-S",
@@ -385,32 +385,48 @@ function M.build(_, project)
 
   local _, configure_err = run_command(configure_args, project.root)
 
-  if not configure_err then
-    local build_args = {
-      "cmake",
-      "--build",
-      project.build_dir,
-      "--config",
-      "Debug",
-    }
+  if configure_err then
+    return nil, ("CMake configure failed: %s"):format(configure_err)
+  end
 
-    local _, build_err = run_command(build_args, project.root)
+  return {
+    kind = project.kind,
+    mode = "debug",
+    build_dir = project.build_dir,
+    configured = true,
+  }
+end
 
-    if not build_err then
-      local binaries = find_binaries(project.build_dir)
+function M.build(ctx, project)
+  local configure_result, configure_err = M.configure(ctx, project)
 
-      return {
-        kind = project.kind,
-        mode = "debug",
-        build_dir = project.build_dir,
-        binaries = binaries,
-      }
-    end
+  if not configure_result then
+    return nil, configure_err
+  end
 
+  local build_args = {
+    "cmake",
+    "--build",
+    project.build_dir,
+    "--config",
+    "Debug",
+  }
+
+  local _, build_err = run_command(build_args, project.root)
+
+  if build_err then
     return nil, ("CMake build failed: %s"):format(build_err)
   end
 
-  return nil, ("CMake configure failed: %s"):format(configure_err)
+  local binaries = find_binaries(project.build_dir)
+
+  return {
+    kind = project.kind,
+    mode = "debug",
+    build_dir = project.build_dir,
+    binaries = binaries,
+    configured = configure_result.configured,
+  }
 end
 
 function M.default_launch_config(_, _, build_result)

@@ -1,19 +1,26 @@
 local M = {}
 
-local command_name = "CPlugCompileDebug"
+local compile_debug_command_name = "CPlugCompileDebug"
+local cmake_configure_command_name = "CPlugCMakeConfigure"
 
-local function create_command()
-  if M.command_created then
+local function create_commands()
+  if M.commands_created then
     return
   end
 
-  vim.api.nvim_create_user_command(command_name, function()
+  vim.api.nvim_create_user_command(compile_debug_command_name, function()
     require("cplug").compile_and_debug()
   end, {
     desc = "Compile the current project in debug mode and start debugging",
   })
 
-  M.command_created = true
+  vim.api.nvim_create_user_command(cmake_configure_command_name, function()
+    require("cplug").cmake_configure()
+  end, {
+    desc = "Configure the current CMake project in debug mode",
+  })
+
+  M.commands_created = true
 end
 
 local function set_keymaps(config)
@@ -68,7 +75,7 @@ end
 
 function M.setup(config)
   if config.create_commands then
-    create_command()
+    create_commands()
   end
 
   set_keymaps(config)

@@ -18,6 +18,7 @@ This version provides:
 
 - `require("cplug").setup()`
 - `:CPlugCompileDebug`
+- `:CPlugCMakeConfigure`
 - optional default keymap wiring
 - `:checkhealth cplug`
 - a core orchestration flow for detection, scaffolding, build, and launch resolution
@@ -144,6 +145,10 @@ COMMANDS                                                     *cplug-commands*
         Runs the core compile/build/debug orchestration flow.
         When resolution succeeds, it starts `nvim-dap` and opens
         `nvim-dap-ui` by default.
+
+:CPlugCMakeConfigure
+        Runs CMake detection and any needed scaffolding, then configures
+        the current project in Debug mode without starting DAP.
 
 ==============================================================================
 HEALTH                                                         *cplug-health*
