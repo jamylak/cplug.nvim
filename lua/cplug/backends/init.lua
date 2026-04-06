@@ -2,6 +2,7 @@ local M = {}
 
 local backend_modules = {
   "cplug.backends.cmake",
+  "cplug.backends.rust",
   "cplug.backends.python",
 }
 
