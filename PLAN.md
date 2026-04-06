@@ -45,6 +45,7 @@ Treat the plugin as a thin orchestrator with a few clean subsystems:
    Include an early fixture that locks in nested Python source discovery and ignored-directory behavior (for example `src/pkg/app.py` versus `.venv` content).
 9. **Coverage expansion**
    Add fixture-based tests for C/C++ and Rust flows, keeping the suite deterministic and reviewable while expanding real-toolchain coverage where practical.
+   Add a focused regression test for empty C/C++ project bootstrapping, especially the C++ path, and consider a small optional demo script that lets local users inspect the generated files and flow in a toy empty C++ project.
 
 ## Notes and assumptions
 
@@ -58,3 +59,4 @@ Treat the plugin as a thin orchestrator with a few clean subsystems:
 - The plugin should keep startup cost near zero by doing detection/build work only after the first mapped action.
 - The first end-to-end debug proof should target Python because it is the cheapest path to a real, automated debugging test; once that harness exists, C/C++ and Rust coverage can be layered in behind it.
 - Favor a pure-Lua implementation unless a very small external helper becomes clearly necessary.
+- In the final stage, revisit whether any core utilities should move out of Lua into a small external helper, based on concrete pain points such as portability, process control, filesystem handling, or maintainability tradeoffs rather than aesthetics alone.
