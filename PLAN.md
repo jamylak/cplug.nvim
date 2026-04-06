@@ -51,8 +51,10 @@ Treat the plugin as a thin orchestrator with a few clean subsystems:
 - `.vscode/launch.json` is the single source of truth for debug setup in v1.
 - v1 assumes `nvim-dap`, `nvim-dap-ui`, and language-specific debuggers/adapters are already installed.
 - For empty C/C++ repos, scaffolding should be **prompted**, not silently generated.
+- Generated CMake templates should enable `compile_commands.json` export and default local builds to Debug mode.
 - Rust support is for existing Cargo projects; Python support focuses on existing script/module-style projects.
 - Python support should grow to account for common environment runners such as `uv` when resolving interpreters and launch behavior.
+- The command surface should grow beyond `:CPlugCompileDebug` to cover direct workflow commands where they add clarity, especially for CMake-oriented flows such as configure-only, build-once, and build-and-run style actions.
 - The plugin should keep startup cost near zero by doing detection/build work only after the first mapped action.
 - The first end-to-end debug proof should target Python because it is the cheapest path to a real, automated debugging test; once that harness exists, C/C++ and Rust coverage can be layered in behind it.
 - Favor a pure-Lua implementation unless a very small external helper becomes clearly necessary.
