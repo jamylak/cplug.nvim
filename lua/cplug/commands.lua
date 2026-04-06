@@ -3,6 +3,7 @@ local M = {}
 local compile_debug_command_name = "CPlugCompileDebug"
 local cmake_configure_command_name = "CPlugCMakeConfigure"
 local cmake_build_once_command_name = "CPlugCMakeBuildOnce"
+local cmake_build_and_run_command_name = "CPlugCMakeBuildAndRun"
 
 local function create_commands()
   if M.commands_created then
@@ -25,6 +26,12 @@ local function create_commands()
     require("cplug").cmake_build_once()
   end, {
     desc = "Build the current CMake project once in debug mode",
+  })
+
+  vim.api.nvim_create_user_command(cmake_build_and_run_command_name, function()
+    require("cplug").cmake_build_and_run()
+  end, {
+    desc = "Build and run the current CMake project in debug mode",
   })
 
   M.commands_created = true

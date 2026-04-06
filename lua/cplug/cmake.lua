@@ -50,6 +50,27 @@ local function resolve_project(ctx)
   return project
 end
 
+local function build_project(ctx)
+  local project, project_err = resolve_project(ctx)
+
+  if not project then
+    return nil, project_err
+  end
+
+  local build_result, build_err = run_step("build", ctx, project)
+
+  if not build_result then
+    notify(build_err, vim.log.levels.ERROR)
+    return nil, build_err
+  end
+
+  return {
+    backend = backend.id,
+    build = build_result,
+    project = project,
+  }
+end
+
 function M.configure(config)
   local ctx = build_context(config)
   local project, project_err = resolve_project(ctx)
@@ -76,26 +97,56 @@ end
 
 function M.build_once(config)
   local ctx = build_context(config)
-  local project, project_err = resolve_project(ctx)
+  local result, build_err = build_project(ctx)
 
-  if not project then
-    return nil, project_err
-  end
-
-  local build_result, build_err = run_step("build", ctx, project)
-
-  if not build_result then
-    notify(build_err, vim.log.levels.ERROR)
+  if not result then
     return nil, build_err
   end
 
-  notify(("Built `%s` project in `%s`"):format(backend.id, build_result.build_dir), vim.log.levels.INFO)
+  notify(("Built `%s` project in `%s`"):format(backend.id, result.build.build_dir), vim.log.levels.INFO)
 
-  return {
-    backend = backend.id,
-    build = build_result,
-    project = project,
+  return result
+end
+
+function M.build_and_run(config)
+  local ctx = build_context(config)
+  local result, build_err = build_project(ctx)
+
+  if not result then
+    return nil, build_err
+  end
+
+  local binaries = result.build.binaries or {}
+
+  if vim.tbl_isempty(binaries) then
+    local err = "No built executable was found after the CMake build"
+    notify(err, vim.log.levels.ERROR)
+    return nil, err
+  end
+
+  local program = binaries[1]
+  local run_result = vim.system({ program }, {
+    cwd = result.project.root,
+    text = true,
+  }):wait()
+
+  if run_result.code ~= 0 then
+    local output = run_result.stderr ~= "" and run_result.stderr or run_result.stdout
+    local err = output ~= "" and output or ("Program failed: %s"):format(program)
+    notify(err, vim.log.levels.ERROR)
+    return nil, err
+  end
+
+  notify(("Built and ran `%s`"):format(program), vim.log.levels.INFO)
+
+  result.run = {
+    program = program,
+    stdout = run_result.stdout,
+    stderr = run_result.stderr,
+    code = run_result.code,
   }
+
+  return result
 end
 
 return M
