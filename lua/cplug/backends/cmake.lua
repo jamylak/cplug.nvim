@@ -195,8 +195,19 @@ local function render_cmake_lists(project)
   return lines
 end
 
+local function render_clang_format()
+  return {
+    "BasedOnStyle: LLVM",
+    "IndentWidth: 2",
+    "TabWidth: 2",
+    "UseTab: Never",
+    "ColumnLimit: 100",
+  }
+end
+
 function M.detect(ctx)
   local cmake_lists = vim.fs.joinpath(ctx.cwd, "CMakeLists.txt")
+  local clang_format = vim.fs.joinpath(ctx.cwd, ".clang-format")
   local build_dir = vim.fs.joinpath(ctx.cwd, ctx.config.c_family.build_dir)
 
   if file_exists(cmake_lists) then
@@ -204,7 +215,9 @@ function M.detect(ctx)
       kind = "cmake",
       root = ctx.cwd,
       cmake_lists = cmake_lists,
+      clang_format = clang_format,
       build_dir = build_dir,
+      config = ctx.config.c_family,
     }
   end
 
@@ -220,7 +233,9 @@ function M.detect(ctx)
     kind = "cmake",
     root = ctx.cwd,
     cmake_lists = cmake_lists,
+    clang_format = clang_format,
     build_dir = build_dir,
+    config = ctx.config.c_family,
     languages = languages,
     needs_scaffold = true,
     sources = source_files,
@@ -230,7 +245,7 @@ end
 
 function M.scaffold(_, project)
   local choice = vim.fn.confirm(
-    ("Generate a minimal CMakeLists.txt at `%s`?"):format(project.cmake_lists),
+    ("Generate minimal C/C++ scaffolding at `%s`?"):format(project.root),
     "&Generate\n&Cancel",
     1
   )
@@ -243,6 +258,14 @@ function M.scaffold(_, project)
 
   if write_ok ~= 0 then
     return nil, ("Failed to write `%s`"):format(project.cmake_lists)
+  end
+
+  if project.config.generate_clang_format and not file_exists(project.clang_format) then
+    local clang_format_ok = vim.fn.writefile(render_clang_format(), project.clang_format)
+
+    if clang_format_ok ~= 0 then
+      return nil, ("Failed to write `%s`"):format(project.clang_format)
+    end
   end
 
   project.needs_scaffold = nil

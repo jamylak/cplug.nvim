@@ -21,7 +21,7 @@ The remaining work is language expansion and adapter-specific polish.
 
 Current backend scope:
 
-- C/C++ detection for existing `CMakeLists.txt` projects and prompted minimal `CMakeLists.txt` generation for source-only repos
+- C/C++ detection for existing `CMakeLists.txt` projects and prompted minimal `CMakeLists.txt` plus `.clang-format` generation for source-only repos
 - missing C/C++ `launch.json` generation from built CMake executables
 - Rust detection for existing `Cargo.toml` projects with debug builds in `target/debug`
 - missing Rust `launch.json` generation from the first Cargo binary target
@@ -81,6 +81,16 @@ Override the default CMake build directory:
 require("cplug").setup({
   c_family = {
     build_dir = "build",
+  },
+})
+```
+
+Skip `.clang-format` generation during C/C++ scaffolding:
+
+```lua
+require("cplug").setup({
+  c_family = {
+    generate_clang_format = false,
   },
 })
 ```
