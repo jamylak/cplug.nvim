@@ -22,6 +22,7 @@ local defaults = {
   },
   c_family = {
     build_dir = "build",
+    generate_clang_format = true,
   },
   python = {
     interpreter = nil,
