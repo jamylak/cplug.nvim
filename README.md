@@ -26,6 +26,7 @@ Current backend scope:
 - Rust detection for existing `Cargo.toml` projects with debug builds in `target/debug`
 - missing Rust `launch.json` generation from the first Cargo binary target
 - Python detection for existing projects via `pyproject.toml`, `requirements.txt`, or top-level `*.py`
+- Python launch generation with interpreter defaults from `.venv`, `venv`, `python3`, or `python`
 - debug launch resolution through `.vscode/launch.json`
 - no C/C++ scaffolding yet
 - no Python scaffolding yet
@@ -80,6 +81,16 @@ Override the default CMake build directory:
 require("cplug").setup({
   c_family = {
     build_dir = "build",
+  },
+})
+```
+
+Override the Python interpreter used in generated launch configs:
+
+```lua
+require("cplug").setup({
+  python = {
+    interpreter = "/path/to/python",
   },
 })
 ```

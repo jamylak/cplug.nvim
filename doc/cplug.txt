@@ -25,6 +25,7 @@ This version provides:
 - an existing-project CMake backend for C/C++
 - an existing-project Cargo backend for Rust
 - a minimal Python backend for existing projects
+- Python launch generation with interpreter defaults from local envs or PATH
 - `nvim-dap` / `nvim-dap-ui` startup from the resolved launch config
 - optional default DAP stepping and breakpoint keymaps
 
@@ -85,6 +86,16 @@ Override the default CMake build directory: >
   require("cplug").setup({
     c_family = {
       build_dir = "build",
+    },
+  })
+  EOF
+<
+
+Override the Python interpreter used in generated launch configs: >
+  lua << EOF
+  require("cplug").setup({
+    python = {
+      interpreter = "/path/to/python",
     },
   })
   EOF
