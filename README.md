@@ -111,6 +111,16 @@ require("cplug").setup({
 })
 ```
 
+Default scaffolded C/C++ templates can seed `CPLUG_WARNINGS_AS_ERRORS`:
+
+```lua
+require("cplug").setup({
+  c_family = {
+    warnings_as_errors = true,
+  },
+})
+```
+
 Bootstrap Git during C/C++ scaffolding:
 
 ```lua

@@ -7,6 +7,7 @@ ROOT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 sh "$ROOT_DIR/scripts/headless-smoke.sh"
 sh "$ROOT_DIR/scripts/test-python-nested-layout.sh"
 sh "$ROOT_DIR/scripts/test-python-interpreter-resolution.sh"
+sh "$ROOT_DIR/scripts/test-cmake-template-generation.sh"
 sh "$ROOT_DIR/scripts/test-cmake-configure-terminal.sh"
 sh "$ROOT_DIR/scripts/test-cmake-configure-terminal-persist.sh"
 sh "$ROOT_DIR/scripts/test-cmake-launch-generation.sh"

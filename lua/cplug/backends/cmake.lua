@@ -193,6 +193,8 @@ local function find_binaries(build_dir)
 end
 
 local function render_cmake_lists(project)
+  local warnings_as_errors = project.config.warnings_as_errors and "ON" or "OFF"
+  local fuzz_source = vim.list_contains(project.languages, "CXX") and "fuzz/fuzz_main.cpp" or "fuzz/fuzz_main.c"
   local lines = {
     "cmake_minimum_required(VERSION 3.16)",
     ("project(%s LANGUAGES %s)"):format(project.target_name, table.concat(project.languages, " ")),
@@ -201,15 +203,25 @@ local function render_cmake_lists(project)
   }
 
   if vim.list_contains(project.languages, "C") then
-    table.insert(lines, "set(CMAKE_C_STANDARD 11)")
+    table.insert(lines, "set(CMAKE_C_STANDARD 17)")
     table.insert(lines, "set(CMAKE_C_STANDARD_REQUIRED ON)")
+    table.insert(lines, "set(CMAKE_C_EXTENSIONS OFF)")
   end
 
   if vim.list_contains(project.languages, "CXX") then
-    table.insert(lines, "set(CMAKE_CXX_STANDARD 17)")
+    table.insert(lines, "set(CMAKE_CXX_STANDARD 23)")
     table.insert(lines, "set(CMAKE_CXX_STANDARD_REQUIRED ON)")
+    table.insert(lines, "set(CMAKE_CXX_EXTENSIONS OFF)")
   end
 
+  table.insert(lines, "")
+  table.insert(lines, 'option(CPLUG_ENABLE_WARNINGS "Enable strict warning flags" ON)')
+  table.insert(
+    lines,
+    ('option(CPLUG_WARNINGS_AS_ERRORS "Treat warnings as errors" %s)'):format(warnings_as_errors)
+  )
+  table.insert(lines, 'option(CPLUG_ENABLE_SANITIZERS "Enable address/undefined sanitizers" OFF)')
+  table.insert(lines, 'option(CPLUG_ENABLE_FUZZING "Build fuzz targets" OFF)')
   table.insert(lines, "")
   table.insert(lines, ("add_executable(%s"):format(project.target_name))
 
@@ -218,6 +230,58 @@ local function render_cmake_lists(project)
   end
 
   table.insert(lines, ")")
+  table.insert(lines, "")
+  table.insert(lines, "if(CPLUG_ENABLE_WARNINGS)")
+  table.insert(lines, '  if(CMAKE_C_COMPILER_ID MATCHES "Clang|AppleClang|GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang|GNU")')
+  table.insert(lines, ("    target_compile_options(%s PRIVATE"):format(project.target_name))
+  table.insert(lines, "      $<$<COMPILE_LANGUAGE:C,CXX>:-Wall>")
+  table.insert(lines, "      $<$<COMPILE_LANGUAGE:C,CXX>:-Wextra>")
+  table.insert(lines, "      $<$<COMPILE_LANGUAGE:C,CXX>:-Wpedantic>")
+  table.insert(lines, "      $<$<COMPILE_LANGUAGE:C,CXX>:-Wshadow>")
+  table.insert(lines, "      $<$<COMPILE_LANGUAGE:C,CXX>:-Wconversion>")
+  table.insert(lines, "      $<$<COMPILE_LANGUAGE:C,CXX>:-Wsign-conversion>")
+  table.insert(lines, "      $<$<COMPILE_LANGUAGE:C,CXX>:-Wformat=2>")
+  table.insert(lines, "    )")
+  table.insert(lines, "    if(CPLUG_WARNINGS_AS_ERRORS)")
+  table.insert(lines, ("      target_compile_options(%s PRIVATE"):format(project.target_name))
+  table.insert(lines, "        $<$<COMPILE_LANGUAGE:C,CXX>:-Werror>")
+  table.insert(lines, "      )")
+  table.insert(lines, "    endif()")
+  table.insert(lines, "  elseif(MSVC)")
+  table.insert(lines, ("    target_compile_options(%s PRIVATE /W4)"):format(project.target_name))
+  table.insert(lines, "    if(CPLUG_WARNINGS_AS_ERRORS)")
+  table.insert(lines, ("      target_compile_options(%s PRIVATE /WX)"):format(project.target_name))
+  table.insert(lines, "    endif()")
+  table.insert(lines, "  endif()")
+  table.insert(lines, "endif()")
+  table.insert(lines, "")
+  table.insert(lines, "if(CPLUG_ENABLE_SANITIZERS)")
+  table.insert(lines, '  if(CMAKE_C_COMPILER_ID MATCHES "Clang|AppleClang|GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang|GNU")')
+  table.insert(lines, ("    target_compile_options(%s PRIVATE"):format(project.target_name))
+  table.insert(lines, "      -fsanitize=address,undefined")
+  table.insert(lines, "      -fno-omit-frame-pointer")
+  table.insert(lines, "    )")
+  table.insert(lines, ("    target_link_options(%s PRIVATE"):format(project.target_name))
+  table.insert(lines, "      -fsanitize=address,undefined")
+  table.insert(lines, "    )")
+  table.insert(lines, "  endif()")
+  table.insert(lines, "endif()")
+  table.insert(lines, "")
+  table.insert(lines, "if(CPLUG_ENABLE_FUZZING)")
+  table.insert(lines, '  if(CMAKE_C_COMPILER_ID MATCHES "Clang|AppleClang" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang")')
+  table.insert(lines, ("    add_executable(%s_fuzz"):format(project.target_name))
+  table.insert(lines, ("      %s"):format(fuzz_source))
+  table.insert(lines, "    )")
+  table.insert(lines, ("    target_compile_options(%s_fuzz PRIVATE"):format(project.target_name))
+  table.insert(lines, "      -fsanitize=fuzzer,address,undefined")
+  table.insert(lines, "      -O1")
+  table.insert(lines, "      -g")
+  table.insert(lines, "    )")
+  table.insert(lines, ("    target_link_options(%s_fuzz PRIVATE"):format(project.target_name))
+  table.insert(lines, "      -fsanitize=fuzzer,address,undefined")
+  table.insert(lines, "    )")
+  table.insert(lines, "  endif()")
+  table.insert(lines, "endif()")
 
   return lines
 end
