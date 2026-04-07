@@ -496,6 +496,21 @@ function M.build(ctx, project)
   }
 end
 
+function M.resolve_binaries(_, project)
+  local binaries = find_binaries(project.build_dir)
+
+  if vim.tbl_isempty(binaries) then
+    return nil, ("No built executable was found in `%s`"):format(project.build_dir)
+  end
+
+  return {
+    kind = project.kind,
+    mode = "debug",
+    build_dir = project.build_dir,
+    binaries = binaries,
+  }
+end
+
 function M.default_launch_config(_, _, build_result)
   if vim.tbl_isempty(build_result.binaries or {}) then
     error("no built executable was found in the CMake build directory")

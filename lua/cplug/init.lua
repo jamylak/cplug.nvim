@@ -35,6 +35,10 @@ function M.cmake_build_and_run()
   return cmake.build_and_run(M._config)
 end
 
+function M.cmake_run()
+  return cmake.run(M._config)
+end
+
 function M.continue()
   return dap.continue()
 end

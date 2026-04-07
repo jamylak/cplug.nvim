@@ -71,6 +71,48 @@ local function build_project(ctx)
   }
 end
 
+local function open_terminal_window()
+  vim.cmd("botright split")
+  vim.cmd("enew")
+
+  local win_id = vim.api.nvim_get_current_win()
+  local buf_id = vim.api.nvim_get_current_buf()
+
+  vim.bo[buf_id].bufhidden = "wipe"
+  vim.bo[buf_id].swapfile = false
+
+  return win_id, buf_id
+end
+
+local function run_in_terminal(result, program)
+  local win_id, buf_id = open_terminal_window()
+  local job_id = vim.fn.termopen({ program }, {
+    cwd = result.project.root,
+  })
+
+  if job_id <= 0 then
+    local err = ("Failed to start `%s` in a terminal buffer"):format(program)
+    notify(err, vim.log.levels.ERROR)
+    return nil, err
+  end
+
+  vim.api.nvim_set_current_win(win_id)
+  vim.api.nvim_win_set_cursor(win_id, { vim.api.nvim_buf_line_count(buf_id), 0 })
+
+  if not vim.tbl_isempty(vim.api.nvim_list_uis()) then
+    vim.cmd("startinsert")
+  end
+
+  result.run = {
+    program = program,
+    job_id = job_id,
+    terminal_buf = buf_id,
+    terminal_win = win_id,
+  }
+
+  return result
+end
+
 function M.configure(config)
   local ctx = build_context(config)
   local project, project_err = resolve_project(ctx)
@@ -125,28 +167,37 @@ function M.build_and_run(config)
   end
 
   local program = binaries[1]
-  local run_result = vim.system({ program }, {
-    cwd = result.project.root,
-    text = true,
-  }):wait()
+  local run_result, run_err = run_in_terminal(result, program)
 
-  if run_result.code ~= 0 then
-    local output = run_result.stderr ~= "" and run_result.stderr or run_result.stdout
-    local err = output ~= "" and output or ("Program failed: %s"):format(program)
-    notify(err, vim.log.levels.ERROR)
-    return nil, err
+  if not run_result then
+    return nil, run_err
   end
 
-  notify(("Built and ran `%s`"):format(program), vim.log.levels.INFO)
+  return run_result
+end
 
-  result.run = {
-    program = program,
-    stdout = run_result.stdout,
-    stderr = run_result.stderr,
-    code = run_result.code,
+function M.run(config)
+  local ctx = build_context(config)
+  local project, project_err = resolve_project(ctx)
+
+  if not project then
+    return nil, project_err
+  end
+
+  local binary_result, binary_err = run_step("resolve_binaries", ctx, project)
+
+  if not binary_result then
+    notify(binary_err, vim.log.levels.ERROR)
+    return nil, binary_err
+  end
+
+  local result = {
+    backend = backend.id,
+    build = binary_result,
+    project = project,
   }
 
-  return result
+  return run_in_terminal(result, binary_result.binaries[1])
 end
 
 return M

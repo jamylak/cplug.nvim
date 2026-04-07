@@ -9,6 +9,7 @@ This project currently has:
 - a `:CPlugCMakeConfigure` user command
 - a `:CPlugCMakeBuildOnce` user command
 - a `:CPlugCMakeBuildAndRun` user command
+- a `:CPlugCMakeRun` user command
 - optional default keymaps
 - a `:checkhealth cplug` healthcheck
 - a core orchestration pipeline for detect -> optional scaffold -> build -> launch resolution
@@ -238,3 +239,15 @@ Run:
 ```
 
 This reuses the same CMake detection and scaffolding flow, performs a Debug build, and runs the first built executable without starting DAP.
+It opens that run in a terminal split, focuses the terminal window, and enters insert mode.
+
+## CMake Run
+
+Run:
+
+```vim
+:CPlugCMakeRun
+```
+
+This runs the first built executable from the configured CMake build directory without rebuilding first.
+It opens the executable in a terminal split, focuses that window, and enters insert mode so live output stays visible while the process runs.
