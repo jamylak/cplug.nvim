@@ -57,6 +57,7 @@ Treat the plugin as a thin orchestrator with a few clean subsystems:
 - Python support should grow to account for common environment runners such as `uv` when resolving interpreters and launch behavior.
 - The command surface should grow beyond `:CPlugCompileDebug` to cover direct workflow commands where they add clarity, especially for CMake-oriented flows such as configure-only, build-once, and build-and-run style actions.
 - Terminal-oriented workflow commands should be revisited after the run path settles, especially to move build-style commands onto `vim.fn.termopen` flows with automatic terminal closure on successful builds.
+- Support non-Debug build modes later, including a clear policy for default mode selection and how direct workflow commands expose alternatives such as Release without bloating the primary fast path.
 - The main `<leader>c` flow should be revisited to decide whether compile-and-debug ought to include a build-and-run step before launching the debugger, and whether that should be the default behavior or a user-configurable policy.
 - Add a default keymap on `<leader>gg` to toggle `nvim-dap-ui` visibility without starting or stopping the debug session.
 - The plugin should keep startup cost near zero by doing detection/build work only after the first mapped action.
