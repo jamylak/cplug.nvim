@@ -62,6 +62,7 @@ Treat the plugin as a thin orchestrator with a few clean subsystems:
 - Add a default keymap on `<leader>gg` to toggle `nvim-dap-ui` visibility without starting or stopping the debug session.
 - Native-language debugging should later support an optional disassembly view for C, C++, and Rust sessions, with a clear decision about when it appears and how it integrates with the main workflow.
 - Debug UI layout handling should grow beyond a single default arrangement to support switching between layouts such as a standard view, code-plus-REPL, and other focused workspace modes.
+- Future low-level language coverage should expand to include Zig, including both backend support and native-debug layout integration.
 - The plugin should keep startup cost near zero by doing detection/build work only after the first mapped action.
 - The first end-to-end debug proof should target Python because it is the cheapest path to a real, automated debugging test; once that harness exists, C/C++ and Rust coverage can be layered in behind it.
 - Low priority: revisit whether the regression scripts and local C++ demo should become more self-contained by bootstrapping Neovim and DAP dependencies instead of assuming they already exist on the user machine, and decide that only after weighing complexity, network requirements, and maintenance cost.
