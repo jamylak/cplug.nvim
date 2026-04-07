@@ -136,6 +136,7 @@ Override the Python interpreter used in generated launch configs: >
 
 Default stepping keymaps:
 
+- `<leader>gg` toggle debug UI
 - `<leader>gc` continue
 - `<leader>gx` terminate
 - `<leader>gn` step over
@@ -216,6 +217,7 @@ DAP KEYMAPS
 
 When `default_keymaps` is enabled, cplug also registers:
 
+- `<leader>gg` to toggle the debug UI
 - `<leader>gc` to continue
 - `<leader>gx` to terminate
 - `<leader>gn` to step over

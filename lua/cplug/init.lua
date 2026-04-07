@@ -43,6 +43,10 @@ function M.continue()
   return dap.continue()
 end
 
+function M.toggle_ui()
+  return dap.toggle_ui()
+end
+
 function M.terminate()
   return dap.terminate()
 end

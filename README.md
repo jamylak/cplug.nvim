@@ -123,6 +123,7 @@ require("cplug").setup({
 
 Default stepping keymaps:
 
+- `<leader>gg` toggle debug UI
 - `<leader>gc` continue
 - `<leader>gx` terminate
 - `<leader>gn` step over
@@ -191,6 +192,7 @@ Once a backend and launch config are resolved, cplug passes the selected configu
 
 When `default_keymaps = true`, cplug also registers a small set of DAP action mappings:
 
+- `toggle debug UI` on `<leader>gg`
 - `continue` on `<leader>gc`
 - `terminate` on `<leader>gx`
 - `step over` on `<leader>gn`

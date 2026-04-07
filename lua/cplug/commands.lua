@@ -55,6 +55,12 @@ local function set_keymaps(config)
     desc = "Compile and debug project",
   })
 
+  vim.keymap.set("n", config.keymaps.toggle_ui, function()
+    require("cplug").toggle_ui()
+  end, {
+    desc = "Toggle debug UI",
+  })
+
   vim.keymap.set("n", config.keymaps.continue, function()
     require("cplug").continue()
   end, {

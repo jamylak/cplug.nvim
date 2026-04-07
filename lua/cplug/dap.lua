@@ -73,6 +73,22 @@ function M.continue()
   return run_action("continue")
 end
 
+function M.toggle_ui()
+  local dapui, dapui_err = require_dependency("dapui", "rcarriga/nvim-dap-ui")
+
+  if not dapui then
+    return nil, dapui_err
+  end
+
+  if type(dapui.toggle) ~= "function" then
+    return nil, "Installed `dapui` module does not support `toggle`"
+  end
+
+  dapui.toggle({})
+
+  return true
+end
+
 function M.terminate()
   return run_action("terminate")
 end

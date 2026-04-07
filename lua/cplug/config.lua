@@ -5,6 +5,7 @@ local defaults = {
   default_keymaps = true,
   keymaps = {
     compile_debug = "<leader>c",
+    toggle_ui = "<leader>gg",
     continue = "<leader>gc",
     terminate = "<leader>gx",
     step_over = "<leader>gn",
