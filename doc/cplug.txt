@@ -111,6 +111,16 @@ Skip `.clang-format` generation during C/C++ scaffolding: >
   EOF
 <
 
+Bootstrap Git during C/C++ scaffolding: >
+  lua << EOF
+  require("cplug").setup({
+    c_family = {
+      bootstrap_git = false,
+    },
+  })
+  EOF
+<
+
 Keep the `:CPlugCMakeBuildOnce` terminal open after a successful build: >
   lua << EOF
   require("cplug").setup({

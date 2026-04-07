@@ -27,6 +27,7 @@ local defaults = {
   c_family = {
     build_dir = "build",
     generate_clang_format = true,
+    bootstrap_git = true,
     empty_project_language = "cpp",
     keep_configure_terminal_open = false,
     keep_build_terminal_open = false,

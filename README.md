@@ -111,6 +111,16 @@ require("cplug").setup({
 })
 ```
 
+Bootstrap Git during C/C++ scaffolding:
+
+```lua
+require("cplug").setup({
+  c_family = {
+    bootstrap_git = false,
+  },
+})
+```
+
 Keep the `:CPlugCMakeBuildOnce` terminal open after a successful build:
 
 ```lua
