@@ -231,6 +231,7 @@ Run:
 ```
 
 This reuses the CMake backend detection and scaffolding flow, then runs a Debug configure step into the configured build directory without starting DAP.
+It opens the configure step in a terminal split, keeps failures visible, and closes the terminal automatically when configuration succeeds.
 
 ## CMake Build Once
 

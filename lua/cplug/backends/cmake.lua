@@ -441,14 +441,7 @@ function M.scaffold(ctx, project)
 end
 
 function M.configure(_, project)
-  local configure_args = {
-    "cmake",
-    "-S",
-    project.root,
-    "-B",
-    project.build_dir,
-    "-DCMAKE_BUILD_TYPE=Debug",
-  }
+  local configure_args = M.configure_command(_, project)
 
   local _, configure_err = run_command(configure_args, project.root)
 
@@ -461,6 +454,17 @@ function M.configure(_, project)
     mode = "debug",
     build_dir = project.build_dir,
     configured = true,
+  }
+end
+
+function M.configure_command(_, project)
+  return {
+    "cmake",
+    "-S",
+    project.root,
+    "-B",
+    project.build_dir,
+    "-DCMAKE_BUILD_TYPE=Debug",
   }
 end
 

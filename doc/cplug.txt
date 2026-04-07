@@ -178,7 +178,10 @@ COMMANDS                                                     *cplug-commands*
 
 :CPlugCMakeConfigure
         Runs CMake detection and any needed scaffolding, then configures
-        the current project in Debug mode without starting DAP.
+        the current project in Debug mode without starting DAP. It opens
+        the configure step in a terminal split, keeps failures visible,
+        and closes the terminal automatically when configuration
+        succeeds.
 
 :CPlugCMakeBuildOnce
         Runs CMake detection and any needed scaffolding, then builds the

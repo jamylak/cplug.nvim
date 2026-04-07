@@ -143,20 +143,28 @@ function M.configure(config)
     return nil, project_err
   end
 
-  local configure_result, configure_err = run_step("configure", ctx, project)
+  local configure_args, configure_args_err = run_step("configure_command", ctx, project)
 
-  if not configure_result then
-    notify(configure_err, vim.log.levels.ERROR)
-    return nil, configure_err
+  if not configure_args then
+    notify(configure_args_err, vim.log.levels.ERROR)
+    return nil, configure_args_err
   end
 
-  notify(("Configured `%s` project in `%s`"):format(backend.id, configure_result.build_dir), vim.log.levels.INFO)
-
-  return {
+  local result = {
     backend = backend.id,
-    configure = configure_result,
+    configure = {
+      kind = project.kind,
+      mode = "debug",
+      build_dir = project.build_dir,
+      configured = true,
+    },
     project = project,
   }
+
+  return run_in_terminal(result, configure_args, {
+    close_on_success = true,
+    result_key = "configure",
+  })
 end
 
 function M.build_once(config)
