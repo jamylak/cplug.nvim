@@ -28,6 +28,7 @@ local defaults = {
     build_dir = "build",
     generate_clang_format = true,
     empty_project_language = "cpp",
+    keep_configure_terminal_open = false,
     keep_build_terminal_open = false,
   },
   python = {

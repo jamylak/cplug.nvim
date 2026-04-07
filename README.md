@@ -121,6 +121,16 @@ require("cplug").setup({
 })
 ```
 
+Keep the `:CPlugCMakeConfigure` terminal open after a successful configure:
+
+```lua
+require("cplug").setup({
+  c_family = {
+    keep_configure_terminal_open = true,
+  },
+})
+```
+
 Override the Python interpreter used in generated launch configs:
 
 ```lua
@@ -231,7 +241,7 @@ Run:
 ```
 
 This reuses the CMake backend detection and scaffolding flow, then runs a Debug configure step into the configured build directory without starting DAP.
-It opens the configure step in a terminal split, keeps failures visible, and closes the terminal automatically when configuration succeeds.
+It opens the configure step in a terminal split, keeps failures visible, and closes the terminal automatically when configuration succeeds unless `c_family.keep_configure_terminal_open = true`.
 
 ## CMake Build Once
 

@@ -192,7 +192,7 @@ function M.configure(config)
   }
 
   return run_in_terminal(result, configure_args, {
-    close_on_success = true,
+    close_on_success = not config.c_family.keep_configure_terminal_open,
     result_key = "configure",
   })
 end
