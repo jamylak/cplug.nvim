@@ -24,7 +24,7 @@ The remaining work is language expansion and adapter-specific polish.
 
 Current backend scope:
 
-- C/C++ detection for existing `CMakeLists.txt` projects, prompted scaffolding for source-only repos, and empty-repo bootstrapping into a minimal C or C++ project
+- C/C++ detection for existing `CMakeLists.txt` projects, automatic scaffolding for source-only repos, and empty-repo bootstrapping into a minimal C++ project by default
 - missing C/C++ `launch.json` generation from built CMake executables
 - Rust detection for existing `Cargo.toml` projects with debug builds in `target/debug`
 - missing Rust `launch.json` generation from the first Cargo binary target
@@ -63,6 +63,19 @@ Auto-generate a minimal `launch.json` when one is missing:
 require("cplug").setup({
   launch = {
     on_missing = "always",
+  },
+})
+```
+
+Control automatic project scaffolding:
+
+```lua
+require("cplug").setup({
+  scaffold = {
+    on_missing = "always",
+  },
+  c_family = {
+    empty_project_language = "cpp",
   },
 })
 ```
@@ -156,6 +169,19 @@ Run the current regression scripts with:
 make test
 ```
 
+Try the plugin locally against a toy or empty C++ project with:
+
+```sh
+sh scripts/run-cpp-demo.sh toy
+sh scripts/run-cpp-demo.sh empty
+```
+
+The demo runner sets `<leader>` to `<Space>`, enables automatic project and
+launch scaffolding, and will also add local `nvim-dap` / `nvim-dap-ui`
+installations plus an LLDB adapter when they are already available on your
+machine. That lets you use `<Space>c` and the default `<Space>g...` debug
+mappings directly in the demo session.
+
 ## DAP Startup
 
 Once a backend and launch config are resolved, cplug passes the selected configuration to `nvim-dap` and opens `nvim-dap-ui` by default.
@@ -178,6 +204,10 @@ The shared launch layer expects `.vscode/launch.json` by default, can select a n
 - `"prompt"` prompts before generating a backend-specific launch file
 - `"always"` generates automatically
 - `"never"` returns an error
+
+Project scaffolding uses `opts.scaffold.on_missing` with the same modes, and
+defaults to `"always"` so `<leader>c` will generate missing C/C++ project
+files automatically.
 
 ## CMake Configure
 

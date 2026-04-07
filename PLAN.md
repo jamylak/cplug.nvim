@@ -29,7 +29,7 @@ Treat the plugin as a thin orchestrator with a few clean subsystems:
 1. **Plugin skeleton**
    Create the Lua module layout, public `setup()` API, commands, health checks, and minimal docs/examples for plain Neovim and `lazy.nvim`.
 2. **Core orchestration**
-   Implement the top-level `<leader>c` flow and a shared backend contract covering detection, scaffold prompt, build, and debug resolution.
+   Implement the top-level `<leader>c` flow and a shared backend contract covering detection, scaffold policy, build, and debug resolution.
 3. **Launch.json support**
    Load existing `.vscode/launch.json`, choose the active configuration, and generate minimal configs when missing.
 4. **DAP and UI integration**
@@ -51,7 +51,7 @@ Treat the plugin as a thin orchestrator with a few clean subsystems:
 
 - `.vscode/launch.json` is the single source of truth for debug setup in v1.
 - v1 assumes `nvim-dap`, `nvim-dap-ui`, and language-specific debuggers/adapters are already installed.
-- For empty C/C++ repos, scaffolding should be **prompted**, not silently generated.
+- For the main compile entrypoint, missing project scaffolding should default to automatic generation, with a configurable policy for prompting or disabling when needed.
 - Generated CMake templates should enable `compile_commands.json` export and default local builds to Debug mode.
 - Rust support is for existing Cargo projects; Python support focuses on existing script/module-style projects.
 - Python support should grow to account for common environment runners such as `uv` when resolving interpreters and launch behavior.

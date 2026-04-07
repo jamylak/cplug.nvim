@@ -17,12 +17,16 @@ local defaults = {
     configuration = nil,
     on_missing = "prompt",
   },
+  scaffold = {
+    on_missing = "always",
+  },
   dap = {
     open_ui = true,
   },
   c_family = {
     build_dir = "build",
     generate_clang_format = true,
+    empty_project_language = "cpp",
   },
   python = {
     interpreter = nil,

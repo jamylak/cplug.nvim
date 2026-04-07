@@ -250,18 +250,85 @@ local function render_starter_source(language)
   }
 end
 
-local function scaffold_empty_project(project)
+local function scaffold_mode(ctx)
+  local mode = ctx.config.scaffold.on_missing
+
+  if mode == "always" or mode == "prompt" or mode == "never" then
+    return mode
+  end
+
+  return nil, ("Unsupported `scaffold.on_missing` mode `%s`"):format(mode)
+end
+
+local function resolve_empty_language(ctx, project)
+  local mode, mode_err = scaffold_mode(ctx)
+
+  if not mode then
+    return nil, mode_err
+  end
+
+  if mode == "never" then
+    return nil, ("No C/C++ project scaffold found in `%s`"):format(project.root)
+  end
+
+  if mode == "prompt" then
+    local choice = vim.fn.confirm(
+      ("Scaffold an empty project at `%s` as C or C++?"):format(project.root),
+      "&C\n&C++\n&Cancel",
+      2
+    )
+
+    if choice ~= 1 and choice ~= 2 then
+      return nil, "CMake scaffolding cancelled"
+    end
+
+    return choice == 1 and "C" or "CXX"
+  end
+
+  local configured = ctx.config.c_family.empty_project_language
+
+  if configured == "c" then
+    return "C"
+  end
+
+  if configured == "cpp" then
+    return "CXX"
+  end
+
+  return nil, ("Unsupported `c_family.empty_project_language` value `%s`"):format(configured)
+end
+
+local function should_scaffold(ctx, project)
+  local mode, mode_err = scaffold_mode(ctx)
+
+  if not mode then
+    return nil, mode_err
+  end
+
+  if mode == "always" then
+    return true
+  end
+
+  if mode == "never" then
+    return false, ("No C/C++ project scaffold found in `%s`"):format(project.root)
+  end
+
   local choice = vim.fn.confirm(
-    ("Scaffold an empty project at `%s` as C or C++?"):format(project.root),
-    "&C\n&C++\n&Cancel",
+    ("Generate minimal C/C++ scaffolding at `%s`?"):format(project.root),
+    "&Generate\n&Cancel",
     1
   )
 
-  if choice ~= 1 and choice ~= 2 then
-    return nil, "CMake scaffolding cancelled"
+  return choice == 1
+end
+
+local function scaffold_empty_project(ctx, project)
+  local language, language_err = resolve_empty_language(ctx, project)
+
+  if not language then
+    return nil, language_err
   end
 
-  local language = choice == 1 and "C" or "CXX"
   local extension = language == "C" and "c" or "cpp"
   local source_dir = vim.fs.joinpath(project.root, "src")
   local source_path = vim.fs.joinpath(source_dir, ("main.%s"):format(extension))
@@ -335,21 +402,21 @@ function M.detect(ctx)
   }
 end
 
-function M.scaffold(_, project)
+function M.scaffold(ctx, project)
   if project.empty_repo then
-    local scaffolded_project, scaffold_err = scaffold_empty_project(project)
+    local scaffolded_project, scaffold_err = scaffold_empty_project(ctx, project)
 
     if not scaffolded_project then
       return nil, scaffold_err
     end
   else
-    local choice = vim.fn.confirm(
-      ("Generate minimal C/C++ scaffolding at `%s`?"):format(project.root),
-      "&Generate\n&Cancel",
-      1
-    )
+    local should_generate, scaffold_err = should_scaffold(ctx, project)
 
-    if choice ~= 1 then
+    if scaffold_err then
+      return nil, scaffold_err
+    end
+
+    if not should_generate then
       return nil, "CMake scaffolding cancelled"
     end
   end

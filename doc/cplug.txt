@@ -77,6 +77,9 @@ For existing CMake projects, source-only C/C++ repos after generating a minimal
 starter C or C++ target, generated launch configs target the first built
 executable found in the configured build directory.
 
+Project scaffolding defaults to automatic generation. For empty C/C++ repos,
+the default starter language is C++.
+
 Disable automatic `dap-ui` opening: >
   lua << EOF
   require("cplug").setup({
@@ -102,6 +105,19 @@ Skip `.clang-format` generation during C/C++ scaffolding: >
   require("cplug").setup({
     c_family = {
       generate_clang_format = false,
+    },
+  })
+  EOF
+<
+
+Control automatic project scaffolding: >
+  lua << EOF
+  require("cplug").setup({
+    scaffold = {
+      on_missing = "always",
+    },
+    c_family = {
+      empty_project_language = "cpp",
     },
   })
   EOF
@@ -182,6 +198,10 @@ When the file is missing, `launch.on_missing` controls behavior:
 - `"prompt"` prompts before generating a backend-specific file
 - `"always"` generates automatically
 - `"never"` returns an error
+
+Project scaffolding uses the same mode names through
+`require("cplug").setup({ scaffold = { on_missing = "..." } })` and defaults to
+`"always"`.
 
 ==============================================================================
 DAP KEYMAPS
