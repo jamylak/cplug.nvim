@@ -111,6 +111,16 @@ require("cplug").setup({
 })
 ```
 
+Keep the `:CPlugCMakeBuildOnce` terminal open after a successful build:
+
+```lua
+require("cplug").setup({
+  c_family = {
+    keep_build_terminal_open = true,
+  },
+})
+```
+
 Override the Python interpreter used in generated launch configs:
 
 ```lua
@@ -231,6 +241,7 @@ Run:
 ```
 
 This reuses the same CMake detection and scaffolding flow, then performs a one-off Debug build into the configured build directory without starting DAP.
+It opens the build in a terminal split, keeps failures visible, and closes the terminal automatically when the build succeeds unless `c_family.keep_build_terminal_open = true`.
 
 ## CMake Build And Run
 

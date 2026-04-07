@@ -84,14 +84,32 @@ local function open_terminal_window()
   return win_id, buf_id
 end
 
-local function run_in_terminal(result, program)
+local function close_terminal_view(buf_id, win_id)
+  if vim.api.nvim_win_is_valid(win_id) and vim.api.nvim_win_get_buf(win_id) == buf_id then
+    vim.api.nvim_win_close(win_id, true)
+  end
+
+  if vim.api.nvim_buf_is_valid(buf_id) then
+    vim.api.nvim_buf_delete(buf_id, { force = true })
+  end
+end
+
+local function run_in_terminal(result, cmd, opts)
+  opts = opts or {}
   local win_id, buf_id = open_terminal_window()
-  local job_id = vim.fn.termopen({ program }, {
-    cwd = result.project.root,
+  local job_id = vim.fn.termopen(cmd, {
+    cwd = opts.cwd or result.project.root,
+    on_exit = function(_, code)
+      if opts.close_on_success and code == 0 then
+        vim.schedule(function()
+          close_terminal_view(buf_id, win_id)
+        end)
+      end
+    end,
   })
 
   if job_id <= 0 then
-    local err = ("Failed to start `%s` in a terminal buffer"):format(program)
+    local err = ("Failed to start `%s` in a terminal buffer"):format(cmd[1])
     notify(err, vim.log.levels.ERROR)
     return nil, err
   end
@@ -103,12 +121,16 @@ local function run_in_terminal(result, program)
     vim.cmd("startinsert")
   end
 
-  result.run = {
-    program = program,
+  local command = table.concat(cmd, " ")
+  local result_key = opts.result_key or "run"
+  local terminal_result = vim.tbl_extend("force", result[result_key] or {}, {
+    command = command,
     job_id = job_id,
     terminal_buf = buf_id,
     terminal_win = win_id,
-  }
+  })
+
+  result[result_key] = terminal_result
 
   return result
 end
@@ -139,15 +161,41 @@ end
 
 function M.build_once(config)
   local ctx = build_context(config)
-  local result, build_err = build_project(ctx)
+  local project, project_err = resolve_project(ctx)
 
-  if not result then
-    return nil, build_err
+  if not project then
+    return nil, project_err
   end
 
-  notify(("Built `%s` project in `%s`"):format(backend.id, result.build.build_dir), vim.log.levels.INFO)
+  local configure_result, configure_err = run_step("configure", ctx, project)
 
-  return result
+  if not configure_result then
+    notify(configure_err, vim.log.levels.ERROR)
+    return nil, configure_err
+  end
+
+  local build_args, build_args_err = run_step("build_command", ctx, project)
+
+  if not build_args then
+    notify(build_args_err, vim.log.levels.ERROR)
+    return nil, build_args_err
+  end
+
+  local result = {
+    backend = backend.id,
+    configure = configure_result,
+    build = {
+      kind = project.kind,
+      mode = "debug",
+      build_dir = project.build_dir,
+    },
+    project = project,
+  }
+
+  return run_in_terminal(result, build_args, {
+    close_on_success = not config.c_family.keep_build_terminal_open,
+    result_key = "build",
+  })
 end
 
 function M.build_and_run(config)
@@ -167,7 +215,7 @@ function M.build_and_run(config)
   end
 
   local program = binaries[1]
-  local run_result, run_err = run_in_terminal(result, program)
+  local run_result, run_err = run_in_terminal(result, { program })
 
   if not run_result then
     return nil, run_err
@@ -197,7 +245,7 @@ function M.run(config)
     project = project,
   }
 
-  return run_in_terminal(result, binary_result.binaries[1])
+  return run_in_terminal(result, { binary_result.binaries[1] })
 end
 
 return M

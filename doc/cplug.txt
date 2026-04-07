@@ -111,6 +111,16 @@ Skip `.clang-format` generation during C/C++ scaffolding: >
   EOF
 <
 
+Keep the `:CPlugCMakeBuildOnce` terminal open after a successful build: >
+  lua << EOF
+  require("cplug").setup({
+    c_family = {
+      keep_build_terminal_open = true,
+    },
+  })
+  EOF
+<
+
 Control automatic project scaffolding: >
   lua << EOF
   require("cplug").setup({
@@ -172,7 +182,10 @@ COMMANDS                                                     *cplug-commands*
 
 :CPlugCMakeBuildOnce
         Runs CMake detection and any needed scaffolding, then builds the
-        current project in Debug mode without starting DAP.
+        current project in Debug mode without starting DAP. It opens the
+        build in a terminal split, keeps failures visible, and closes the
+        terminal automatically when the build succeeds unless
+        `c_family.keep_build_terminal_open = true`.
 
 :CPlugCMakeBuildAndRun
         Runs CMake detection and any needed scaffolding, then builds and

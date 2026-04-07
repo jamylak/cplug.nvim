@@ -496,6 +496,16 @@ function M.build(ctx, project)
   }
 end
 
+function M.build_command(_, project)
+  return {
+    "cmake",
+    "--build",
+    project.build_dir,
+    "--config",
+    "Debug",
+  }
+end
+
 function M.resolve_binaries(_, project)
   local binaries = find_binaries(project.build_dir)
 
