@@ -253,7 +253,7 @@ Run:
 ```
 
 This reuses the same CMake detection and scaffolding flow, performs a Debug build, and runs the first built executable without starting DAP.
-It opens that run in a terminal split, focuses the terminal window, and enters insert mode.
+It now runs the build in a terminal first, then starts the executable in a second terminal only after the build succeeds.
 
 ## CMake Run
 
