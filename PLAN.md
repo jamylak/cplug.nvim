@@ -62,5 +62,6 @@ Treat the plugin as a thin orchestrator with a few clean subsystems:
 - Add a default keymap on `<leader>gg` to toggle `nvim-dap-ui` visibility without starting or stopping the debug session.
 - The plugin should keep startup cost near zero by doing detection/build work only after the first mapped action.
 - The first end-to-end debug proof should target Python because it is the cheapest path to a real, automated debugging test; once that harness exists, C/C++ and Rust coverage can be layered in behind it.
+- Low priority: revisit whether the regression scripts and local C++ demo should become more self-contained by bootstrapping Neovim and DAP dependencies instead of assuming they already exist on the user machine, and decide that only after weighing complexity, network requirements, and maintenance cost.
 - Favor a pure-Lua implementation unless a very small external helper becomes clearly necessary.
 - In the final stage, revisit whether any core utilities should move out of Lua into a small external helper, based on concrete pain points such as portability, process control, filesystem handling, or maintainability tradeoffs rather than aesthetics alone.
