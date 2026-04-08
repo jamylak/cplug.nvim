@@ -326,6 +326,19 @@ default `<Space>g...` debug mappings directly in the demo session, including
 The demo also exposes `:CPlugAttach` and `:CPlugGenerateAttach` so you can try
 attach flows after starting a local process yourself.
 
+For a repeatable attach demo, use the dedicated `target` and `editor` scripts:
+
+```sh
+sh scripts/demo/python-attach-target.sh
+sh scripts/demo/python-attach-editor.sh
+
+sh scripts/demo/cpp-attach-target.sh
+sh scripts/demo/cpp-attach-editor.sh
+```
+
+The `target` script starts something attachable. The `editor` script opens
+Neovim in the matching demo project. Then run `:CPlugAttach` inside Neovim.
+
 ## DAP Startup
 
 Once a backend and launch config are resolved, cplug passes the selected configuration to `nvim-dap` and opens `nvim-dap-ui` by default. cplug manages named `dapui` layout presets unless you set `dap.manage_ui_layout = false`.

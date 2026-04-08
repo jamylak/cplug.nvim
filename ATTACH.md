@@ -10,6 +10,9 @@ plan.
 - Python has a generated server-attach template for `debugpy`
 - C/C++ and Rust have generated LLDB process-attach templates using `${command:pickProcess}`
 - Attach skips the normal cplug build/scaffold path
+- Dedicated demo scripts now exist for:
+  - Python server attach
+  - C++ process attach
 
 ## Still Missing
 
@@ -28,12 +31,12 @@ plan.
 ## Python Attach
 
 - [x] Generate a basic `debugpy` server-attach config
+- [x] Add a real local demo path that bootstraps `debugpy` and walks through attach end-to-end
 - [ ] Document exact `debugpy` startup commands for common cases
 - [ ] Decide whether Python attach generation should support:
   - fixed `127.0.0.1:5678`
   - prompting for host/port
   - multiple named templates
-- [ ] Add a real local demo path that assumes `debugpy` is available and walks through attach end-to-end
 - [ ] Add stronger checks/messages when `debugpy` is missing locally
 
 ## Native Attach
@@ -49,8 +52,8 @@ plan.
 - [ ] Test the local C++ demo with a long-running process and verify `:CPlugAttach` plus process picker end-to-end
 - [ ] Add a dedicated scripted regression for attach config selection when both launch and attach entries exist
 - [ ] Add coverage for selected named attach configs that are not the first config in `launch.json`
-- [ ] Add a real Python attach demo run with `debugpy` installed
-- [ ] Decide whether `scripts/run-python-demo.sh` should optionally bootstrap or verify `debugpy`
+- [x] Add a real Python attach demo run with `debugpy` installed
+- [x] Decide whether `scripts/run-python-demo.sh` should optionally bootstrap or verify `debugpy`
 
 ## Product Questions
 

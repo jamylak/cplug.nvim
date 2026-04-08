@@ -382,6 +382,16 @@ supports one and the file is missing.
 starting DAP. Existing launch entries are preserved unless a generated attach
 configuration replaces one with the same name.
 
+Local attach demos are available through:
+
+- `sh scripts/demo/python-attach-target.sh`
+- `sh scripts/demo/python-attach-editor.sh`
+- `sh scripts/demo/cpp-attach-target.sh`
+- `sh scripts/demo/cpp-attach-editor.sh`
+
+Run the matching `target` script in one terminal, the `editor` script in
+another, then use `:CPlugAttach` inside Neovim.
+
 ==============================================================================
 DAP KEYMAPS
 
