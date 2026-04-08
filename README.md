@@ -141,9 +141,8 @@ require("dapui").setup({
     },
     {
       elements = {
-        { id = "disassembly", size = 0.5 },
-        { id = "repl", size = 0.25 },
-        { id = "console", size = 0.25 },
+        { id = "disassembly", size = 0.7 },
+        { id = "repl", size = 0.3 },
       },
       position = "bottom",
       size = 16,
