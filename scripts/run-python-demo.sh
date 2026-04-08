@@ -224,11 +224,24 @@ EOF
 
 if [ -n "$DEBUGPY_PYTHON" ]; then
   cat >> "$INIT_FILE" <<EOF
-  dap.adapters.python = {
-    type = "executable",
-    command = "$DEBUGPY_PYTHON",
-    args = { "-m", "debugpy.adapter" },
-  }
+  dap.adapters.python = function(callback, config)
+    if config.request == "attach" then
+      local connect = config.connect or {}
+
+      callback({
+        type = "server",
+        host = connect.host or "127.0.0.1",
+        port = connect.port or 5678,
+      })
+      return
+    end
+
+    callback({
+      type = "executable",
+      command = "$DEBUGPY_PYTHON",
+      args = { "-m", "debugpy.adapter" },
+    })
+  end
 EOF
 fi
 
