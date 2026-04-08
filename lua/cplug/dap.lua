@@ -166,6 +166,21 @@ local function notify(message, level)
   vim.notify(message, level, { title = "cplug.nvim" })
 end
 
+local function resolve_managed_pick_process(run_config)
+  if run_config.pid ~= "${command:pickProcess}" then
+    return run_config
+  end
+
+  run_config.pid = function()
+    local process_picker = require("cplug.process_picker")
+    return process_picker.pick_process({
+      prompt = "Select process: ",
+    })
+  end
+
+  return run_config
+end
+
 local function build_run_config(ctx, launch_config)
   local run_config = vim.deepcopy(launch_config.configuration)
 
@@ -173,7 +188,7 @@ local function build_run_config(ctx, launch_config)
     run_config.cwd = ctx.cwd
   end
 
-  return run_config
+  return resolve_managed_pick_process(run_config)
 end
 
 local function is_low_level_run_config(run_config)
