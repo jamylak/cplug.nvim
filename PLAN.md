@@ -56,6 +56,8 @@ Treat the plugin as a thin orchestrator with a few clean subsystems:
 - Rust support is for existing Cargo projects; Python support focuses on existing script/module-style projects.
 - Python support should grow to account for common environment runners such as `uv` when resolving interpreters and launch behavior.
 - The command surface should grow beyond `:CPlugCompileDebug` to cover direct workflow commands where they add clarity, especially for CMake-oriented flows such as configure-only, build-once, and build-and-run style actions.
+- Add template-only generation commands later so users can request scaffold output without entering the full build/debug path, especially for CMake project files such as `CMakeLists.txt`, `.clang-format`, and related starter layout generation.
+  Revisit command naming before implementation; prefer a clear generation-oriented verb over awkward `Gen...` abbreviations.
 - Terminal-oriented workflow commands should be revisited after the run path settles, especially to move build-style commands onto `vim.fn.termopen` flows with automatic terminal closure on successful builds.
 - Support non-Debug build modes later, including a clear policy for default mode selection and how direct workflow commands expose alternatives such as Release without bloating the primary fast path.
 - The main `<leader>c` flow should be revisited to decide whether compile-and-debug ought to include a build-and-run step before launching the debugger, and whether that should be the default behavior or a user-configurable policy.
