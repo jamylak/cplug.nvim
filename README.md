@@ -19,6 +19,7 @@ This project currently has:
 - an existing-project Cargo backend for Rust
 - a minimal Python backend for existing projects
 - `nvim-dap` / `nvim-dap-ui` startup from the resolved launch config
+- automatic `nvim-dap-disasm` wiring for the default low-level UI when it is installed
 - optional default DAP stepping and breakpoint keymaps
 
 The remaining work is language expansion and adapter-specific polish.
@@ -87,6 +88,66 @@ Disable automatic `dap-ui` opening:
 require("cplug").setup({
   dap = {
     open_ui = false,
+  },
+})
+```
+
+Let cplug own the default `dapui` layout setup explicitly:
+
+```lua
+require("cplug").setup({
+  dap = {
+    manage_ui_layout = true,
+  },
+})
+```
+
+Disable the default disassembly pane in low-level debug layouts:
+
+```lua
+require("cplug").setup({
+  dap = {
+    disassembly = {
+      enabled = false,
+    },
+  },
+})
+```
+
+If you disable cplug-managed UI layouts, you own the `dapui` layout and must
+add `disassembly` yourself if you still want that pane:
+
+```lua
+require("cplug").setup({
+  dap = {
+    manage_ui_layout = false,
+    disassembly = {
+      enabled = true,
+    },
+  },
+})
+
+require("dapui").setup({
+  layouts = {
+    {
+      elements = {
+        { id = "scopes", size = 0.25 },
+        { id = "breakpoints", size = 0.25 },
+        { id = "stacks", size = 0.25 },
+        { id = "watches", size = 0.25 },
+      },
+      position = "left",
+      size = 40,
+    },
+    {
+      elements = {
+        { id = "disassembly", size = 0.5 },
+        { id = "repl", size = 0.25 },
+        { id = "console", size = 0.25 },
+      },
+      position = "bottom",
+      size = 16,
+    },
   },
 })
 ```
@@ -176,6 +237,12 @@ Default stepping keymaps:
 ```lua
 {
   "jamylak/cplug.nvim",
+  dependencies = {
+    "mfussenegger/nvim-dap",
+    "nvim-neotest/nvim-nio",
+    "rcarriga/nvim-dap-ui",
+    "Jorenar/nvim-dap-disasm",
+  },
   keys = {
     {
       "<leader>c",
@@ -201,7 +268,7 @@ Run:
 :checkhealth cplug
 ```
 
-The healthcheck warns when `nvim-dap` or `nvim-dap-ui` are missing from `runtimepath`.
+The healthcheck warns when `nvim-dap`, `nvim-dap-ui`, or `nvim-dap-disasm` are missing from `runtimepath`.
 
 ## Tests
 
@@ -219,14 +286,14 @@ sh scripts/run-cpp-demo.sh empty
 ```
 
 The demo runner sets `<leader>` to `<Space>`, enables automatic project and
-launch scaffolding, and will also add local `nvim-dap` / `nvim-dap-ui`
-installations plus an LLDB adapter when they are already available on your
-machine. That lets you use `<Space>c` and the default `<Space>g...` debug
-mappings directly in the demo session.
+launch scaffolding, and will also add local `nvim-dap`, `nvim-dap-ui`, and
+`nvim-dap-disasm` installations plus an LLDB adapter when they are already
+available on your machine. That lets you use `<Space>c` and the default
+`<Space>g...` debug mappings directly in the demo session.
 
 ## DAP Startup
 
-Once a backend and launch config are resolved, cplug passes the selected configuration to `nvim-dap` and opens `nvim-dap-ui` by default.
+Once a backend and launch config are resolved, cplug passes the selected configuration to `nvim-dap` and opens `nvim-dap-ui` by default. cplug manages the default `dapui` layouts unless you set `dap.manage_ui_layout = false`. Low-level adapters use a disassembly-first bottom layout automatically when `Jorenar/nvim-dap-disasm` is installed; disable that with `dap.disassembly.enabled = false`.
 
 ## DAP Keymaps
 

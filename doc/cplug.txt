@@ -32,6 +32,7 @@ This version provides:
 - Python launch generation with interpreter defaults from local envs or PATH
 - Python file discovery across common source layouts
 - `nvim-dap` / `nvim-dap-ui` startup from the resolved launch config
+- automatic `nvim-dap-disasm` wiring for the default low-level UI when it is installed
 - optional default DAP stepping and breakpoint keymaps
 
 Language coverage is still being built out.
@@ -86,6 +87,66 @@ Disable automatic `dap-ui` opening: >
   require("cplug").setup({
     dap = {
       open_ui = false,
+    },
+  })
+  EOF
+<
+
+Let cplug own the default `dapui` layout setup explicitly: >
+  lua << EOF
+  require("cplug").setup({
+    dap = {
+      manage_ui_layout = true,
+    },
+  })
+  EOF
+<
+
+Disable the default disassembly pane in low-level debug layouts: >
+  lua << EOF
+  require("cplug").setup({
+    dap = {
+      disassembly = {
+        enabled = false,
+      },
+    },
+  })
+  EOF
+<
+
+If you disable cplug-managed UI layouts, you own the `dapui` layout and must
+add `disassembly` yourself if you still want that pane: >
+  lua << EOF
+  require("cplug").setup({
+    dap = {
+      manage_ui_layout = false,
+      disassembly = {
+        enabled = true,
+      },
+    },
+  })
+
+  require("dapui").setup({
+    layouts = {
+      {
+        elements = {
+          { id = "scopes", size = 0.25 },
+          { id = "breakpoints", size = 0.25 },
+          { id = "stacks", size = 0.25 },
+          { id = "watches", size = 0.25 },
+        },
+        position = "left",
+        size = 40,
+      },
+      {
+        elements = {
+          { id = "disassembly", size = 0.5 },
+          { id = "repl", size = 0.25 },
+          { id = "console", size = 0.25 },
+        },
+        position = "bottom",
+        size = 16,
+      },
     },
   })
   EOF
@@ -187,6 +248,12 @@ Default stepping keymaps:
 lazy.nvim example: >
   {
     "jamylak/cplug.nvim",
+    dependencies = {
+      "mfussenegger/nvim-dap",
+      "nvim-neotest/nvim-nio",
+      "rcarriga/nvim-dap-ui",
+      "Jorenar/nvim-dap-disasm",
+    },
     keys = {
       { "<leader>c", function() require("cplug").compile_and_debug() end, desc = "Compile and debug" },
     },
@@ -204,7 +271,9 @@ COMMANDS                                                     *cplug-commands*
 :CPlugCompileDebug
         Runs the core compile/build/debug orchestration flow.
         When resolution succeeds, it starts `nvim-dap` and opens
-        `nvim-dap-ui` by default.
+        `nvim-dap-ui` by default. Low-level adapters also use a
+        disassembly-first bottom layout when `nvim-dap-disasm` is
+        available, unless `dap.disassembly.enabled = false`.
 
 :CPlugCMakeConfigure
         Runs CMake detection and any needed scaffolding, then configures
@@ -239,6 +308,7 @@ Run `:checkhealth cplug` to confirm that:
 - cplug.nvim is installed
 - `nvim-dap` is available
 - `nvim-dap-ui` is available
+- `nvim-dap-disasm` is available for low-level disassembly
 
 ==============================================================================
 LAUNCH CONFIGS
