@@ -110,6 +110,13 @@ else
   DAPUI_DIR=
 fi
 
+DISASM_DIR=
+if DISASM_DIR=$(find_plugin_dir nvim-dap-disasm 2>/dev/null); then
+  :
+else
+  DISASM_DIR=
+fi
+
 NIO_DIR=
 if NIO_DIR=$(find_plugin_dir nvim-nio 2>/dev/null); then
   :
@@ -141,6 +148,7 @@ EOF
 
 append_plugin_init "$DAP_DIR" "$INIT_FILE"
 append_plugin_init "$DAPUI_DIR" "$INIT_FILE"
+append_plugin_init "$DISASM_DIR" "$INIT_FILE"
 append_plugin_init "$NIO_DIR" "$INIT_FILE"
 append_plugin_init "$NUI_DIR" "$INIT_FILE"
 
@@ -184,6 +192,7 @@ printf '%s\n' "mode: $MODE"
 printf '%s\n' "leader: <Space>"
 printf '%s\n' "nvim-dap: ${DAP_DIR:-not found}"
 printf '%s\n' "nvim-dap-ui: ${DAPUI_DIR:-not found}"
+printf '%s\n' "nvim-dap-disasm: ${DISASM_DIR:-not found}"
 printf '%s\n' "nvim-nio: ${NIO_DIR:-not found}"
 printf '%s\n' "nui.nvim: ${NUI_DIR:-not found}"
 printf '%s\n' "lldb adapter: ${LLDB_COMMAND:-not found}"
