@@ -6,6 +6,7 @@ local defaults = {
   keymaps = {
     compile_debug = "<leader>c",
     toggle_ui = "<leader>gg",
+    layout_picker = "<leader>gl",
     continue = "<leader>gc",
     terminate = "<leader>gx",
     step_over = "<leader>gn",
@@ -24,6 +25,7 @@ local defaults = {
   dap = {
     open_ui = true,
     manage_ui_layout = true,
+    layout = "auto",
     disassembly = {
       enabled = true,
     },

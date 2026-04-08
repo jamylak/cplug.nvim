@@ -92,6 +92,16 @@ require("cplug").setup({
 })
 ```
 
+Pick a default managed DAP UI layout:
+
+```lua
+require("cplug").setup({
+  dap = {
+    layout = "code_repl",
+  },
+})
+```
+
 Let cplug own the default `dapui` layout setup explicitly:
 
 ```lua
@@ -288,17 +298,39 @@ The demo runner sets `<leader>` to `<Space>`, enables automatic project and
 launch scaffolding, and will also add local `nvim-dap`, `nvim-dap-ui`, and
 `nvim-dap-disasm` installations plus an LLDB adapter when they are already
 available on your machine. That lets you use `<Space>c` and the default
-`<Space>g...` debug mappings directly in the demo session.
+`<Space>g...` debug mappings directly in the demo session, including
+`<Space>gl` for the layout picker.
 
 ## DAP Startup
 
-Once a backend and launch config are resolved, cplug passes the selected configuration to `nvim-dap` and opens `nvim-dap-ui` by default. cplug manages the default `dapui` layouts unless you set `dap.manage_ui_layout = false`. Low-level adapters use a disassembly-first bottom layout automatically when `Jorenar/nvim-dap-disasm` is installed; disable that with `dap.disassembly.enabled = false`.
+Once a backend and launch config are resolved, cplug passes the selected configuration to `nvim-dap` and opens `nvim-dap-ui` by default. cplug manages named `dapui` layout presets unless you set `dap.manage_ui_layout = false`.
+
+By default `dap.layout = "auto"`:
+
+- non-low-level adapters use the `standard` layout
+- low-level adapters use the `native` layout
+
+Available managed presets:
+
+- `standard`
+- `native`
+- `code_repl`
+- `stack_focus`
+- `repl_only`
+
+You can switch layouts at runtime with `:CPlugLayout` or the default
+`<leader>gl` keymap. `:CPlugLayout` with no argument opens a built-in floating
+picker with fuzzy filtering.
+Low-level sessions use the disassembly pane in the `native` layout when
+`Jorenar/nvim-dap-disasm` is installed; disable that with
+`dap.disassembly.enabled = false`.
 
 ## DAP Keymaps
 
 When `default_keymaps = true`, cplug also registers a small set of DAP action mappings:
 
 - `toggle debug UI` on `<leader>gg`
+- `pick debug UI layout` on `<leader>gl`
 - `continue` on `<leader>gc`
 - `terminate` on `<leader>gx`
 - `step over` on `<leader>gn`
@@ -361,3 +393,23 @@ Run:
 
 This runs the first built executable from the configured CMake build directory without rebuilding first.
 It opens the executable in a terminal split, focuses that window, and enters insert mode so live output stays visible while the process runs.
+
+## Layout Picker
+
+Run:
+
+```vim
+:CPlugLayout
+```
+
+With no argument, this opens the managed DAP layout picker through
+the built-in floating picker. Start typing to fuzzy-filter the available
+layouts, then press `<CR>` to switch.
+
+You can also set a layout directly:
+
+```vim
+:CPlugLayout code_repl
+:CPlugLayout native
+:CPlugLayout auto
+```

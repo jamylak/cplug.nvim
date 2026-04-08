@@ -47,6 +47,18 @@ function M.toggle_ui()
   return dap.toggle_ui()
 end
 
+function M.layout_names(include_auto)
+  return dap.layout_names(include_auto)
+end
+
+function M.select_layout()
+  return dap.select_layout(M._config)
+end
+
+function M.set_layout(name)
+  return dap.set_layout(M._config, name)
+end
+
 function M.terminate()
   return dap.terminate()
 end

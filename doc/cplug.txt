@@ -92,6 +92,16 @@ Disable automatic `dap-ui` opening: >
   EOF
 <
 
+Pick a default managed DAP UI layout: >
+  lua << EOF
+  require("cplug").setup({
+    dap = {
+      layout = "code_repl",
+    },
+  })
+  EOF
+<
+
 Let cplug own the default `dapui` layout setup explicitly: >
   lua << EOF
   require("cplug").setup({
@@ -299,6 +309,12 @@ COMMANDS                                                     *cplug-commands*
         directory without rebuilding first. It opens the process in a
         terminal split, focuses that window, and enters insert mode.
 
+:CPlugLayout [name]
+        With no argument, opens the built-in floating fuzzy layout picker.
+        With a layout name, switches directly to that
+        preset. Valid names are `auto`, `standard`, `native`,
+        `code_repl`, `stack_focus`, and `repl_only`.
+
 ==============================================================================
 HEALTH                                                         *cplug-health*
 
@@ -333,6 +349,7 @@ DAP KEYMAPS
 When `default_keymaps` is enabled, cplug also registers:
 
 - `<leader>gg` to toggle the debug UI
+- `<leader>gl` to open the debug UI layout picker
 - `<leader>gc` to continue
 - `<leader>gx` to terminate
 - `<leader>gn` to step over

@@ -7,42 +7,136 @@ local LOW_LEVEL_ADAPTERS = {
   gdb = true,
 }
 
-local MANAGED_DAPUI_LAYOUTS = {
-  {
-    elements = {
-      { id = "scopes", size = 0.25 },
-      { id = "breakpoints", size = 0.25 },
-      { id = "stacks", size = 0.25 },
-      { id = "watches", size = 0.25 },
-    },
-    position = "left",
-    size = 40,
+local MANAGED_DAPUI_PRESET_ORDER = {
+  "standard",
+  "native",
+  "code_repl",
+  "stack_focus",
+  "repl_only",
+}
+
+local MANAGED_DAPUI_PRESETS = {
+  standard = {
+    description = "Standard debug view with scopes and a bottom REPL",
+    build = function()
+      return {
+        {
+          elements = {
+            { id = "scopes", size = 0.25 },
+            { id = "breakpoints", size = 0.25 },
+            { id = "stacks", size = 0.25 },
+            { id = "watches", size = 0.25 },
+          },
+          position = "left",
+          size = 40,
+        },
+        {
+          elements = {
+            { id = "repl", size = 1 },
+          },
+          position = "bottom",
+          size = 10,
+        },
+      }
+    end,
   },
-  {
-    elements = {
-      { id = "repl", size = 1 },
-    },
-    position = "bottom",
-    size = 10,
+  native = {
+    description = "Native debugging view with disassembly and REPL",
+    build = function(include_disassembly)
+      local bottom_elements = {
+        { id = "repl", size = 1 },
+      }
+
+      if include_disassembly then
+        bottom_elements = {
+          { id = "disassembly", size = 0.7 },
+          { id = "repl", size = 0.3 },
+        }
+      end
+
+      return {
+        {
+          elements = {
+            { id = "scopes", size = 0.25 },
+            { id = "breakpoints", size = 0.25 },
+            { id = "stacks", size = 0.25 },
+            { id = "watches", size = 0.25 },
+          },
+          position = "left",
+          size = 40,
+        },
+        {
+          elements = bottom_elements,
+          position = "bottom",
+          size = include_disassembly and 16 or 10,
+        },
+      }
+    end,
   },
-  {
-    elements = {
-      { id = "disassembly", size = 0.7 },
-      { id = "repl", size = 0.3 },
-    },
-    position = "bottom",
-    size = 16,
+  code_repl = {
+    description = "Code-focused view with only a bottom REPL",
+    build = function()
+      return {
+        {
+          elements = {
+            { id = "repl", size = 1 },
+          },
+          position = "bottom",
+          size = 14,
+        },
+      }
+    end,
+  },
+  stack_focus = {
+    description = "Stack-focused view for crash and call-flow debugging",
+    build = function()
+      return {
+        {
+          elements = {
+            { id = "stacks", size = 0.45 },
+            { id = "scopes", size = 0.35 },
+            { id = "breakpoints", size = 0.2 },
+          },
+          position = "left",
+          size = 44,
+        },
+        {
+          elements = {
+            { id = "repl", size = 1 },
+          },
+          position = "bottom",
+          size = 10,
+        },
+      }
+    end,
+  },
+  repl_only = {
+    description = "REPL-only view for command-driven debugging",
+    build = function()
+      return {
+        {
+          elements = {
+            { id = "repl", size = 1 },
+          },
+          position = "right",
+          size = 90,
+        },
+      }
+    end,
   },
 }
 
 local state = {
   active_layouts = nil,
+  current_layout_name = nil,
   current_session = nil,
   dapui_configured = false,
   dapui_managed = false,
   disassembly_configured = false,
   disassembly_warned = false,
-  managed_has_disassembly = false,
+  layout_override = nil,
+  managed_layout_has_disassembly = false,
+  managed_layout_name = nil,
 }
 
 local function require_dependency(module_name, package_name)
@@ -86,43 +180,81 @@ local function is_low_level_run_config(run_config)
   return LOW_LEVEL_ADAPTERS[run_config.type] == true
 end
 
-local function build_managed_layouts(include_disassembly)
-  local layouts = {
-    vim.deepcopy(MANAGED_DAPUI_LAYOUTS[1]),
-    vim.deepcopy(MANAGED_DAPUI_LAYOUTS[2]),
-  }
+local function managed_layout_names(include_auto)
+  local names = {}
 
-  if include_disassembly then
-    layouts[3] = vim.deepcopy(MANAGED_DAPUI_LAYOUTS[3])
+  if include_auto then
+    table.insert(names, "auto")
+  end
+
+  for _, name in ipairs(MANAGED_DAPUI_PRESET_ORDER) do
+    table.insert(names, name)
+  end
+
+  return names
+end
+
+local function resolve_layout_name(config, low_level)
+  local requested = state.layout_override or config.dap.layout or "auto"
+
+  if requested == "auto" then
+    return low_level and "native" or "standard"
+  end
+
+  if MANAGED_DAPUI_PRESETS[requested] then
+    return requested
+  end
+
+  return nil, ("Unknown DAP layout `%s`"):format(requested)
+end
+
+local function build_managed_layouts(layout_name, include_disassembly)
+  local preset = MANAGED_DAPUI_PRESETS[layout_name]
+
+  if not preset then
+    return nil, ("Unknown DAP layout `%s`"):format(layout_name)
+  end
+
+  local layouts = preset.build(include_disassembly)
+
+  if type(layouts) ~= "table" or vim.tbl_isempty(layouts) then
+    return nil, ("DAP layout `%s` returned no layouts"):format(layout_name)
   end
 
   return layouts
 end
 
-local function configure_managed_dapui(dapui, include_disassembly)
+local function resolve_active_layouts(layouts)
+  local active = {}
+
+  for index = 1, #layouts do
+    table.insert(active, index)
+  end
+
+  return active
+end
+
+local function configure_managed_dapui(dapui, layout_name, layouts, include_disassembly)
   if type(dapui.setup) ~= "function" then
     return
   end
 
-  if state.dapui_configured and state.managed_has_disassembly == include_disassembly then
+  if
+    state.dapui_configured
+    and state.managed_layout_name == layout_name
+    and state.managed_layout_has_disassembly == include_disassembly
+  then
     return
   end
 
   dapui.setup({
-    layouts = build_managed_layouts(include_disassembly),
+    layouts = layouts,
   })
 
   state.dapui_managed = true
   state.dapui_configured = true
-  state.managed_has_disassembly = include_disassembly
-end
-
-local function resolve_active_layouts(low_level)
-  if low_level and state.managed_has_disassembly then
-    return { 1, 3 }
-  end
-
-  return { 1, 2 }
+  state.managed_layout_has_disassembly = include_disassembly
+  state.managed_layout_name = layout_name
 end
 
 local function open_managed_layouts(dapui, layouts)
@@ -225,14 +357,52 @@ local function ensure_ui(config, low_level)
   state.dapui_managed = manage_ui_layout
 
   if manage_ui_layout then
-    configure_managed_dapui(dapui, disassembly_enabled)
-    state.active_layouts = resolve_active_layouts(low_level)
+    local layout_name, layout_err = resolve_layout_name(config, low_level)
+
+    if not layout_name then
+      return nil, layout_err
+    end
+
+    local include_disassembly = disassembly_enabled and layout_name == "native"
+    local layouts, layouts_err = build_managed_layouts(layout_name, include_disassembly)
+
+    if not layouts then
+      return nil, layouts_err
+    end
+
+    configure_managed_dapui(dapui, layout_name, layouts, include_disassembly)
+    state.active_layouts = resolve_active_layouts(layouts)
+    state.current_layout_name = layout_name
   else
     state.dapui_configured = false
     state.active_layouts = nil
+    state.current_layout_name = nil
   end
 
   return dapui, nil, disassembly_enabled
+end
+
+local function apply_selected_layout(config)
+  if config.dap.manage_ui_layout == false then
+    return true
+  end
+
+  if not require_optional_dependency("dapui") then
+    return true
+  end
+
+  local low_level = state.current_session and state.current_session.low_level or false
+  local dapui, dapui_err = ensure_ui(config, low_level)
+
+  if not dapui then
+    return nil, dapui_err
+  end
+
+  if state.active_layouts then
+    return open_managed_layouts(dapui, state.active_layouts)
+  end
+
+  return true
 end
 
 function M.start(ctx, launch_config)
@@ -279,6 +449,7 @@ function M.start(ctx, launch_config)
   return {
     adapter = run_config.type,
     disassembly = low_level and disassembly_enabled,
+    layout = state.current_layout_name,
     low_level = low_level,
     open_ui = dapui ~= nil,
     run_config = run_config,
@@ -297,6 +468,76 @@ local function run_action(method, package_name)
   end
 
   dap[method]()
+
+  return true
+end
+
+function M.layout_names(include_auto)
+  return managed_layout_names(include_auto)
+end
+
+function M.current_layout_name(config)
+  local low_level = state.current_session and state.current_session.low_level or false
+  local layout_name = resolve_layout_name(config, low_level)
+
+  if not layout_name then
+    return nil
+  end
+
+  return layout_name
+end
+
+function M.select_layout(config)
+  local layout_picker = require("cplug.layout_picker")
+  local entries = {
+    {
+      name = "auto",
+      description = "Follow adapter type: standard for most sessions, native for low-level adapters",
+      ordinal = "auto follow adapter type standard native automatic",
+    },
+  }
+
+  for _, name in ipairs(MANAGED_DAPUI_PRESET_ORDER) do
+    entries[#entries + 1] = {
+      name = name,
+      description = MANAGED_DAPUI_PRESETS[name].description,
+      ordinal = ("%s %s"):format(name, MANAGED_DAPUI_PRESETS[name].description),
+    }
+  end
+
+  return layout_picker.open({
+    entries = entries,
+    active_name = state.layout_override or config.dap.layout or "auto",
+    on_select = function(name)
+      local ok, err = M.set_layout(config, name)
+
+      if not ok and err then
+        notify(err, vim.log.levels.ERROR)
+      end
+    end,
+  })
+end
+
+function M.set_layout(config, name)
+  local requested = name or "auto"
+
+  if requested ~= "auto" and not MANAGED_DAPUI_PRESETS[requested] then
+    return nil, ("Unknown DAP layout `%s`"):format(requested)
+  end
+
+  state.layout_override = requested
+
+  local applied, apply_err = apply_selected_layout(config)
+
+  if not applied then
+    return nil, apply_err
+  end
+
+  if requested == "auto" then
+    notify("DAP UI layout set to `auto`", vim.log.levels.INFO)
+  else
+    notify(("DAP UI layout set to `%s`"):format(requested), vim.log.levels.INFO)
+  end
 
   return true
 end

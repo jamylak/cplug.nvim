@@ -5,6 +5,7 @@ local cmake_configure_command_name = "CPlugCMakeConfigure"
 local cmake_build_once_command_name = "CPlugCMakeBuildOnce"
 local cmake_build_and_run_command_name = "CPlugCMakeBuildAndRun"
 local cmake_run_command_name = "CPlugCMakeRun"
+local layout_command_name = "CPlugLayout"
 
 local function create_commands()
   if M.commands_created then
@@ -41,6 +42,21 @@ local function create_commands()
     desc = "Run the current CMake project without rebuilding",
   })
 
+  vim.api.nvim_create_user_command(layout_command_name, function(opts)
+    if opts.args == "" then
+      require("cplug").select_layout()
+      return
+    end
+
+    require("cplug").set_layout(opts.args)
+  end, {
+    nargs = "?",
+    complete = function()
+      return require("cplug").layout_names(true)
+    end,
+    desc = "Switch the managed DAP UI layout or open the layout picker",
+  })
+
   M.commands_created = true
 end
 
@@ -59,6 +75,12 @@ local function set_keymaps(config)
     require("cplug").toggle_ui()
   end, {
     desc = "Toggle debug UI",
+  })
+
+  vim.keymap.set("n", config.keymaps.layout_picker, function()
+    require("cplug").select_layout()
+  end, {
+    desc = "Select debug UI layout",
   })
 
   vim.keymap.set("n", config.keymaps.continue, function()
