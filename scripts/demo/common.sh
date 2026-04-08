@@ -5,6 +5,10 @@ set -eu
 ROOT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 TMP_BASE=${TMPDIR:-/tmp}
 
+realpath_path() {
+  python3 -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "$1"
+}
+
 find_plugin_dir() {
   plugin_name=$1
 

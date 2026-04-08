@@ -26,7 +26,7 @@ case "${1:-}" in
     ;;
 esac
 
-DEMO_DIR=$TMP_BASE/cplug-cpp-attach-demo
+DEMO_DIR=$(realpath_path "$TMP_BASE/cplug-cpp-attach-demo")
 
 ensure_cpp_attach_project "$DEMO_DIR"
 TARGET_BIN=$(build_cpp_attach_target "$DEMO_DIR")

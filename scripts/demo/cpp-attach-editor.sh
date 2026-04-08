@@ -29,7 +29,7 @@ case "${1:-}" in
     ;;
 esac
 
-DEMO_DIR=$TMP_BASE/cplug-cpp-attach-demo
+DEMO_DIR=$(realpath_path "$TMP_BASE/cplug-cpp-attach-demo")
 STATE_DIR=$(mktemp -d "$TMP_BASE/cplug-cpp-attach-state.XXXXXX")
 INIT_FILE=$STATE_DIR/init.lua
 XDG_STATE_HOME=$STATE_DIR/state
