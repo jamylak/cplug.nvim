@@ -18,6 +18,8 @@ This version provides:
 
 - `require("cplug").setup()`
 - `:CPlugCompileDebug`
+- `:CPlugAttach`
+- `:CPlugGenerateAttach`
 - `:CPlugCMakeConfigure`
 - `:CPlugCMakeBuildOnce`
 - `:CPlugCMakeBuildAndRun`
@@ -30,6 +32,7 @@ This version provides:
 - an existing-project Cargo backend for Rust
 - a minimal Python backend for existing projects
 - Python launch generation with interpreter defaults from local envs or PATH
+- attach config generation for Python and native process attach flows
 - Python file discovery across common source layouts
 - `nvim-dap` / `nvim-dap-ui` startup from the resolved launch config
 - automatic `nvim-dap-disasm` wiring for the default low-level UI when it is installed
@@ -303,6 +306,15 @@ COMMANDS                                                     *cplug-commands*
         disassembly-first bottom layout when `nvim-dap-disasm` is
         available, unless `dap.disassembly.enabled = false`.
 
+:CPlugAttach
+        Detects the current backend, resolves the selected attach
+        configuration from `launch.json`, and starts DAP without entering
+        the normal build/scaffold path.
+
+:CPlugGenerateAttach
+        Writes or updates an attach configuration for the current backend
+        into `.vscode/launch.json` without starting a debug session.
+
 :CPlugCMakeConfigure
         Runs CMake detection and any needed scaffolding, then configures
         the current project in Debug mode without starting DAP. It opens
@@ -361,6 +373,14 @@ When the file is missing, `launch.on_missing` controls behavior:
 Project scaffolding uses the same mode names through
 `require("cplug").setup({ scaffold = { on_missing = "..." } })` and defaults to
 `"always"`.
+
+`:CPlugAttach` uses the same `launch.on_missing` policy, but resolves attach
+configurations first and can generate an attach template when the backend
+supports one and the file is missing.
+
+`:CPlugGenerateAttach` writes or updates an attach configuration without
+starting DAP. Existing launch entries are preserved unless a generated attach
+configuration replaces one with the same name.
 
 ==============================================================================
 DAP KEYMAPS

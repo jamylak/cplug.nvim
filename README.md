@@ -6,6 +6,8 @@ This project currently has:
 
 - a public `setup()` API
 - a `:CPlugCompileDebug` user command
+- a `:CPlugAttach` user command
+- a `:CPlugGenerateAttach` user command
 - a `:CPlugCMakeConfigure` user command
 - a `:CPlugCMakeBuildOnce` user command
 - a `:CPlugCMakeBuildAndRun` user command
@@ -32,6 +34,7 @@ Current backend scope:
 - missing Rust `launch.json` generation from the first Cargo binary target
 - Python detection for existing projects via `pyproject.toml`, `requirements.txt`, or discovered `*.py` files in common source layouts
 - Python launch generation with interpreter defaults from `.venv`, `venv`, `python3`, or `python`
+- attach config generation for Python and native process attach flows
 - debug launch resolution through `.vscode/launch.json`
 - no Python scaffolding yet
 
@@ -320,6 +323,9 @@ available on your machine. That lets you use `<Space>c`, `<Space>gj`, and the
 default `<Space>g...` debug mappings directly in the demo session, including
 `<Space>gl` for the layout picker.
 
+The demo also exposes `:CPlugAttach` and `:CPlugGenerateAttach` so you can try
+attach flows after starting a local process yourself.
+
 ## DAP Startup
 
 Once a backend and launch config are resolved, cplug passes the selected configuration to `nvim-dap` and opens `nvim-dap-ui` by default. cplug manages named `dapui` layout presets unless you set `dap.manage_ui_layout = false`.
@@ -376,6 +382,39 @@ The shared launch layer expects `.vscode/launch.json` by default, can select a n
 Project scaffolding uses `opts.scaffold.on_missing` with the same modes, and
 defaults to `"always"` so `<leader>c` will generate missing C/C++ project
 files automatically.
+
+`:CPlugAttach` uses the same `launch.on_missing` policy, but resolves attach
+configurations first and can auto-generate an attach config when the backend
+provides one and `.vscode/launch.json` is missing.
+
+`:CPlugGenerateAttach` writes or updates an attach configuration for the
+current backend without starting DAP. Existing launch entries are preserved
+unless a generated attach configuration replaces one with the same name.
+
+## Attach
+
+Run:
+
+```vim
+:CPlugAttach
+```
+
+This detects the current backend, resolves the selected attach configuration,
+and starts `nvim-dap` without entering cplug's build or scaffold path.
+
+Run:
+
+```vim
+:CPlugGenerateAttach
+```
+
+This writes a backend-appropriate attach configuration into
+`.vscode/launch.json` without starting a debug session.
+
+Current attach templates:
+
+- Python: `debugpy`-style server attach on `127.0.0.1:5678`
+- C/C++ and Rust: LLDB process attach using `${command:pickProcess}`
 
 ## CMake Configure
 
