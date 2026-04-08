@@ -60,6 +60,7 @@ Treat the plugin as a thin orchestrator with a few clean subsystems:
 - The command surface should grow beyond `:CPlugCompileDebug` to cover direct workflow commands where they add clarity, especially for CMake-oriented flows such as configure-only, build-once, and build-and-run style actions.
 - First-class attach workflows should become a priority across supported backends, especially Python, so users can attach to an already-running debug server without treating attach as an incidental side effect of the compile-and-debug pipeline.
   That should include a clearer command path, attach-oriented `launch.json` generation or templates, and a decision about when attach flows should skip build/scaffold work entirely.
+  It should also include proper end-to-end testing and demo coverage for both attach-to-server and attach-to-process flows, rather than stopping at config generation or thin headless stubs.
 - Add template-only generation commands later so users can request scaffold output without entering the full build/debug path, especially for CMake project files such as `CMakeLists.txt`, `.clang-format`, and related starter layout generation.
   Revisit command naming before implementation; prefer a clear generation-oriented verb over awkward `Gen...` abbreviations.
 - Terminal-oriented workflow commands should be revisited after the run path settles, especially to move build-style commands onto `vim.fn.termopen` flows with automatic terminal closure on successful builds.
