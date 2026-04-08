@@ -23,6 +23,10 @@ local defaults = {
   },
   dap = {
     open_ui = true,
+    manage_ui_layout = true,
+    disassembly = {
+      enabled = true,
+    },
   },
   c_family = {
     build_dir = "build",
