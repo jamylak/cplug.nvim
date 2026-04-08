@@ -145,4 +145,21 @@ function M.default_launch_config(ctx, project)
   }
 end
 
+function M.default_attach_config()
+  return {
+    version = "0.2.0",
+    configurations = {
+      {
+        name = "Attach to Python server",
+        type = "python",
+        request = "attach",
+        connect = {
+          host = "127.0.0.1",
+          port = 5678,
+        },
+      },
+    },
+  }
+end
+
 return M

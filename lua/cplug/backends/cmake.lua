@@ -671,4 +671,19 @@ function M.default_launch_config(_, _, build_result)
   }
 end
 
+function M.default_attach_config(_, project)
+  return {
+    version = "0.2.0",
+    configurations = {
+      {
+        name = ("Attach %s process"):format(path_basename(project.root)),
+        type = "lldb",
+        request = "attach",
+        pid = "${command:pickProcess}",
+        cwd = "${workspaceFolder}",
+      },
+    },
+  }
+end
+
 return M

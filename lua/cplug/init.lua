@@ -23,6 +23,14 @@ function M.compile_and_debug()
   return orchestrator.run(M._config)
 end
 
+function M.attach()
+  return orchestrator.attach(M._config)
+end
+
+function M.generate_attach_config()
+  return orchestrator.generate_attach_config(M._config)
+end
+
 function M.cmake_configure()
   return cmake.configure(M._config)
 end

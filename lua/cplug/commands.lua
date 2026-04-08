@@ -1,6 +1,8 @@
 local M = {}
 
 local compile_debug_command_name = "CPlugCompileDebug"
+local attach_command_name = "CPlugAttach"
+local generate_attach_command_name = "CPlugGenerateAttach"
 local cmake_configure_command_name = "CPlugCMakeConfigure"
 local cmake_build_once_command_name = "CPlugCMakeBuildOnce"
 local cmake_build_and_run_command_name = "CPlugCMakeBuildAndRun"
@@ -16,6 +18,18 @@ local function create_commands()
     require("cplug").compile_and_debug()
   end, {
     desc = "Compile the current project in debug mode and start debugging",
+  })
+
+  vim.api.nvim_create_user_command(attach_command_name, function()
+    require("cplug").attach()
+  end, {
+    desc = "Attach to an existing debug target using the selected attach config",
+  })
+
+  vim.api.nvim_create_user_command(generate_attach_command_name, function()
+    require("cplug").generate_attach_config()
+  end, {
+    desc = "Generate or update an attach configuration for the current project",
   })
 
   vim.api.nvim_create_user_command(cmake_configure_command_name, function()
