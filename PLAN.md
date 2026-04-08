@@ -34,16 +34,18 @@ Treat the plugin as a thin orchestrator with a few clean subsystems:
    Load existing `.vscode/launch.json`, choose the active configuration, and generate minimal configs when missing.
 4. **DAP and UI integration**
    Wire resolved configs into `nvim-dap`, auto-open `nvim-dap-ui`, and expose optional default stepping/motion keymaps.
-5. **C/C++ backend**
+5. **Panel fullscreen-tab workflows**
+   Add a simple, high-priority way to open a focused debug panel such as Scopes or REPL in its own fullscreen tab, exposed through a clear user command and/or optional keybind rather than burying it inside layout switching.
+6. **C/C++ backend**
    Detect CMake projects, prompt before generating `CMakeLists.txt`, `.clang-format`, and `launch.json` for empty repos, then configure and build Debug targets.
-6. **Rust backend**
+7. **Rust backend**
    Detect `Cargo.toml`, build with Cargo in debug mode, and resolve launch targets for binaries.
-7. **Python backend**
+8. **Python backend**
    Detect Python projects, resolve interpreter/program defaults, generate `launch.json` when needed, and run a debug session without adding packaging assumptions.
-8. **Automated test harness**
+9. **Automated test harness**
    Add unit tests for parsing/detection, integration tests for orchestration, and at least one real end-to-end Python debugging fixture that proves the plugin can drive a debug session through `nvim-dap`.
    Include an early fixture that locks in nested Python source discovery and ignored-directory behavior (for example `src/pkg/app.py` versus `.venv` content).
-9. **Coverage expansion**
+10. **Coverage expansion**
    Add fixture-based tests for C/C++ and Rust flows, keeping the suite deterministic and reviewable while expanding real-toolchain coverage where practical.
    Add a focused regression test for empty C/C++ project bootstrapping, especially the C++ path, and consider a small optional demo script that lets local users inspect the generated files and flow in a toy empty C++ project.
 
@@ -56,12 +58,15 @@ Treat the plugin as a thin orchestrator with a few clean subsystems:
 - Rust support is for existing Cargo projects; Python support focuses on existing script/module-style projects.
 - Python support should grow to account for common environment runners such as `uv` when resolving interpreters and launch behavior.
 - The command surface should grow beyond `:CPlugCompileDebug` to cover direct workflow commands where they add clarity, especially for CMake-oriented flows such as configure-only, build-once, and build-and-run style actions.
+- First-class attach workflows should become a priority across supported backends, especially Python, so users can attach to an already-running debug server without treating attach as an incidental side effect of the compile-and-debug pipeline.
+  That should include a clearer command path, attach-oriented `launch.json` generation or templates, and a decision about when attach flows should skip build/scaffold work entirely.
 - Add template-only generation commands later so users can request scaffold output without entering the full build/debug path, especially for CMake project files such as `CMakeLists.txt`, `.clang-format`, and related starter layout generation.
   Revisit command naming before implementation; prefer a clear generation-oriented verb over awkward `Gen...` abbreviations.
 - Terminal-oriented workflow commands should be revisited after the run path settles, especially to move build-style commands onto `vim.fn.termopen` flows with automatic terminal closure on successful builds.
 - Support non-Debug build modes later, including a clear policy for default mode selection and how direct workflow commands expose alternatives such as Release without bloating the primary fast path.
 - The main `<leader>c` flow should be revisited to decide whether compile-and-debug ought to include a build-and-run step before launching the debugger, and whether that should be the default behavior or a user-configurable policy.
 - Add a default keymap on `<leader>gg` to toggle `nvim-dap-ui` visibility without starting or stopping the debug session.
+- Higher priority than broader layout presets: users should be able to open one panel, such as Scopes or REPL, in a dedicated fullscreen tab with an easy entrypoint, ideally a user command and optionally a default keybind.
 - Native-language debugging should later support an optional disassembly view for C, C++, and Rust sessions, with a clear decision about when it appears and how it integrates with the main workflow.
 - Debug UI layout handling should grow beyond a single default arrangement to support switching between layouts such as a standard view, code-plus-REPL, and other focused workspace modes.
 - Future low-level language coverage should expand to include Zig, including both backend support and native-debug layout integration.
