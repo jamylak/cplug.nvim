@@ -41,11 +41,24 @@ Current backend scope:
 require("cplug").setup()
 ```
 
-Disable the built-in keymap if you want to own lazy-loading or mappings yourself:
+Disable the built-in keymaps if you want to own lazy-loading or mappings yourself:
 
 ```lua
 require("cplug").setup({
   default_keymaps = false,
+})
+```
+
+Customize the built-in keymaps per action. Each entry accepts a single lhs, a
+list of lhs values for aliases, or `false` to skip that action entirely:
+
+```lua
+require("cplug").setup({
+  keymaps = {
+    compile_debug = { "<leader>c", "<leader>gj" },
+    continue = { "<leader>gc", "<leader><leader>c" },
+    restart = false,
+  },
 })
 ```
 
@@ -231,15 +244,21 @@ require("cplug").setup({
 })
 ```
 
-Default stepping keymaps:
+Default keymaps:
 
+- `<leader>c` compile and debug
+- `<leader>gj` compile and debug
 - `<leader>gg` toggle debug UI
+- `<leader>gl` pick debug UI layout
 - `<leader>gc` continue
 - `<leader>gx` terminate
 - `<leader>gn` step over
 - `<leader>gi` step into
 - `<leader>go` step out
 - `<leader>gb` toggle breakpoint
+- `<leader>gr` run to cursor
+- `<leader>gq` restart
+- `<leader>ge` evaluate expression
 
 ## lazy.nvim
 
@@ -297,8 +316,8 @@ sh scripts/run-cpp-demo.sh empty
 The demo runner sets `<leader>` to `<Space>`, enables automatic project and
 launch scaffolding, and will also add local `nvim-dap`, `nvim-dap-ui`, and
 `nvim-dap-disasm` installations plus an LLDB adapter when they are already
-available on your machine. That lets you use `<Space>c` and the default
-`<Space>g...` debug mappings directly in the demo session, including
+available on your machine. That lets you use `<Space>c`, `<Space>gj`, and the
+default `<Space>g...` debug mappings directly in the demo session, including
 `<Space>gl` for the layout picker.
 
 ## DAP Startup
@@ -329,6 +348,7 @@ Low-level sessions use the disassembly pane in the `native` layout when
 
 When `default_keymaps = true`, cplug also registers a small set of DAP action mappings:
 
+- `compile and debug` on `<leader>c` and `<leader>gj`
 - `toggle debug UI` on `<leader>gg`
 - `pick debug UI layout` on `<leader>gl`
 - `continue` on `<leader>gc`
@@ -337,6 +357,13 @@ When `default_keymaps = true`, cplug also registers a small set of DAP action ma
 - `step into` on `<leader>gi`
 - `step out` on `<leader>go`
 - `toggle breakpoint` on `<leader>gb`
+- `run to cursor` on `<leader>gr`
+- `restart` on `<leader>gq`
+- `evaluate expression` on `<leader>ge`
+
+If you want extra convenience bindings without fully opting out, set
+`keymaps.<action>` to a list of lhs values. If you want complete control, set
+`default_keymaps = false` and define your own mappings outside the plugin.
 
 ## Launch Configs
 

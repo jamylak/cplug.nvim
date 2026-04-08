@@ -46,10 +46,23 @@ Plain Neovim config: >
   EOF
 <
 
-Disable the default keymap: >
+Disable the default keymaps: >
   lua << EOF
   require("cplug").setup({
     default_keymaps = false,
+  })
+  EOF
+<
+
+Customize the built-in keymaps per action. Each entry accepts a single lhs, a
+list of lhs values for aliases, or `false` to skip that action: >
+  lua << EOF
+  require("cplug").setup({
+    keymaps = {
+      compile_debug = { "<leader>c", "<leader>gj" },
+      continue = { "<leader>gc", "<leader><leader>c" },
+      restart = false,
+    },
   })
   EOF
 <
@@ -244,15 +257,21 @@ Override the Python interpreter used in generated launch configs: >
   EOF
 <
 
-Default stepping keymaps:
+Default keymaps:
 
+- `<leader>c` compile and debug
+- `<leader>gj` compile and debug
 - `<leader>gg` toggle debug UI
+- `<leader>gl` pick debug UI layout
 - `<leader>gc` continue
 - `<leader>gx` terminate
 - `<leader>gn` step over
 - `<leader>gi` step into
 - `<leader>go` step out
 - `<leader>gb` toggle breakpoint
+- `<leader>gr` run to cursor
+- `<leader>gq` restart
+- `<leader>ge` evaluate expression
 
 lazy.nvim example: >
   {
@@ -348,6 +367,7 @@ DAP KEYMAPS
 
 When `default_keymaps` is enabled, cplug also registers:
 
+- `<leader>c` and `<leader>gj` to compile and debug
 - `<leader>gg` to toggle the debug UI
 - `<leader>gl` to open the debug UI layout picker
 - `<leader>gc` to continue
@@ -356,6 +376,13 @@ When `default_keymaps` is enabled, cplug also registers:
 - `<leader>gi` to step into
 - `<leader>go` to step out
 - `<leader>gb` to toggle a breakpoint
+- `<leader>gr` to run to the cursor
+- `<leader>gq` to restart the session
+- `<leader>ge` to evaluate the expression at the cursor
+
+For extra convenience bindings, set `keymaps.<action>` to a list of lhs
+values. For full control, set `default_keymaps = false` and define mappings
+yourself.
 
 ==============================================================================
 vim:tw=78:ts=8:noet:ft=help:norl:

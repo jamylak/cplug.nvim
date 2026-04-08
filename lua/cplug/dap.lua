@@ -594,4 +594,28 @@ function M.toggle_breakpoint()
   return run_action("toggle_breakpoint")
 end
 
+function M.run_to_cursor()
+  return run_action("run_to_cursor")
+end
+
+function M.restart()
+  return run_action("restart")
+end
+
+function M.evaluate()
+  local widgets, widgets_err = require_dependency("dap.ui.widgets", "mfussenegger/nvim-dap")
+
+  if not widgets then
+    return nil, widgets_err
+  end
+
+  if type(widgets.hover) ~= "function" then
+    return nil, "Installed `dap.ui.widgets` module does not support `hover`"
+  end
+
+  widgets.hover()
+
+  return true
+end
+
 return M

@@ -79,4 +79,16 @@ function M.toggle_breakpoint()
   return dap.toggle_breakpoint()
 end
 
+function M.run_to_cursor()
+  return dap.run_to_cursor()
+end
+
+function M.restart()
+  return dap.restart()
+end
+
+function M.evaluate()
+  return dap.evaluate()
+end
+
 return M
