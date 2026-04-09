@@ -76,3 +76,4 @@ Treat the plugin as a thin orchestrator with a few clean subsystems:
 - Low priority: revisit whether the regression scripts and local C++ demo should become more self-contained by bootstrapping Neovim and DAP dependencies instead of assuming they already exist on the user machine, and decide that only after weighing complexity, network requirements, and maintenance cost.
 - Favor a pure-Lua implementation unless a very small external helper becomes clearly necessary.
 - In the final stage, revisit whether any core utilities should move out of Lua into a small external helper, based on concrete pain points such as portability, process control, filesystem handling, or maintainability tradeoffs rather than aesthetics alone.
+- Make the plugin load lazily
