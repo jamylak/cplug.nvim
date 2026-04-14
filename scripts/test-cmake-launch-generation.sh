@@ -30,7 +30,7 @@ EOF
 nvim --headless -u NONE -i NONE \
   --cmd "set rtp+=$ROOT_DIR" \
   --cmd "cd $TEST_DIR" \
-  "+lua local ok, err = pcall(function() package.loaded['dap'] = { run = function(cfg) vim.g.cplug_cmake_launch = cfg end }; package.loaded['dapui'] = { open = function() end }; require('cplug').setup({ launch = { on_missing = 'always' } }); local result, run_err = require('cplug').compile_and_debug(); assert(result, run_err); assert(result.backend == 'cmake'); assert(vim.fn.filereadable('build/hello') == 1); assert(vim.fn.filereadable('.vscode/launch.json') == 1); assert(vim.g.cplug_cmake_launch.program == (vim.fn.getcwd() .. '/build/hello'):gsub('^/tmp/', '/private/tmp/')); assert(not vim.g.cplug_cmake_launch.program:find('/CMakeFiles/', 1, true)) end); if not ok then vim.api.nvim_err_writeln(err); vim.cmd('cquit 1') end" \
+  "+lua local ok, err = pcall(function() package.loaded['dap'] = { adapters = { lldb = {} }, run = function(cfg) vim.g.cplug_cmake_launch = cfg end }; package.loaded['dapui'] = { open = function() end }; require('cplug').setup({ launch = { on_missing = 'always' } }); local result, run_err = require('cplug').compile_and_debug(); assert(result, run_err); assert(result.backend == 'cmake'); assert(vim.fn.filereadable('build/hello') == 1); assert(vim.fn.filereadable('.vscode/launch.json') == 1); assert(vim.g.cplug_cmake_launch.program == (vim.fn.getcwd() .. '/build/hello'):gsub('^/tmp/', '/private/tmp/')); assert(not vim.g.cplug_cmake_launch.program:find('/CMakeFiles/', 1, true)) end); if not ok then vim.api.nvim_err_writeln(err); vim.cmd('cquit 1') end" \
   +qall
 
 echo "cmake launch generation test passed"

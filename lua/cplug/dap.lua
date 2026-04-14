@@ -162,6 +162,20 @@ local function require_optional_dependency(module_name)
   return nil
 end
 
+local function ensure_adapter_registered(dap, adapter_name)
+  local adapters = dap.adapters
+
+  if type(adapters) ~= "table" then
+    return nil, "Installed `dap` module does not expose `adapters`"
+  end
+
+  if adapters[adapter_name] == nil then
+    return nil, ("Config references missing adapter `%s`"):format(adapter_name)
+  end
+
+  return true
+end
+
 local function notify(message, level)
   vim.notify(message, level, { title = "cplug.nvim" })
 end
@@ -431,11 +445,19 @@ function M.start(ctx, launch_config)
   local low_level = is_low_level_run_config(run_config)
   local dapui
   local disassembly_enabled = false
+  local adapter_ok
+  local adapter_err
 
   state.current_session = {
     config = ctx.config,
     low_level = low_level,
   }
+
+  adapter_ok, adapter_err = ensure_adapter_registered(dap, run_config.type)
+
+  if not adapter_ok then
+    return nil, adapter_err
+  end
 
   if ctx.config.dap.open_ui then
     dapui, dap_err, disassembly_enabled = ensure_ui(ctx.config, low_level)
