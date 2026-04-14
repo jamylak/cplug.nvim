@@ -1,6 +1,13 @@
 # cplug.nvim
 
+## 🚧 Work In Progress
+
+This plugin is still a work in progress and is still being tested.
+
 `cplug.nvim` aims to make `<leader>c` the compile-and-debug entrypoint for small local projects.
+
+It started as C debug, CMake, and related C/C++ tooling inside my older `jamylak/nvimconf` setup.
+The goal here is to pull that work out into a cleaner reusable plugin in its own repo, so the debug workflow can stay separate and easier to maintain.
 
 This project currently has:
 
