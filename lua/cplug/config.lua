@@ -29,6 +29,7 @@ local defaults = {
     open_ui = true,
     manage_ui_layout = true,
     layout = "auto",
+    auto_adapter = "none",
     disassembly = {
       enabled = true,
     },

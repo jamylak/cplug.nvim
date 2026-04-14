@@ -32,7 +32,7 @@ nvim --headless -u NONE -i NONE --cmd "set rtp+=$ROOT_DIR" \
 echo "==> python attach command runs selected attach config"
 nvim --headless -u NONE -i NONE --cmd "set rtp+=$ROOT_DIR" \
   "+cd $TEST_DIR_REAL" \
-  "+lua local ok, err = pcall(function() package.loaded['dap'] = { run = function(cfg) vim.g.cplug_python_attach = cfg end }; package.loaded['dapui'] = { open = function() end, setup = function() end, close = function() end }; require('cplug').setup({ launch = { configuration = 'Attach to Python server' } }); local result, attach_err = require('cplug').attach(); assert(result, attach_err); assert(result.backend == 'python'); assert(result.dap.low_level == false); assert(vim.g.cplug_python_attach.request == 'attach'); assert(vim.g.cplug_python_attach.connect.host == '127.0.0.1'); assert(vim.g.cplug_python_attach.connect.port == 5678) end); if not ok then vim.api.nvim_err_writeln(err); vim.cmd('cquit 1') end" \
+  "+lua local ok, err = pcall(function() package.loaded['dap'] = { adapters = { python = {} }, run = function(cfg) vim.g.cplug_python_attach = cfg end }; package.loaded['dapui'] = { open = function() end, setup = function() end, close = function() end }; require('cplug').setup({ launch = { configuration = 'Attach to Python server' } }); local result, attach_err = require('cplug').attach(); assert(result, attach_err); assert(result.backend == 'python'); assert(result.dap.low_level == false); assert(vim.g.cplug_python_attach.request == 'attach'); assert(vim.g.cplug_python_attach.connect.host == '127.0.0.1'); assert(vim.g.cplug_python_attach.connect.port == 5678) end); if not ok then vim.api.nvim_err_writeln(err); vim.cmd('cquit 1') end" \
   +qall
 
 echo "python attach test passed"

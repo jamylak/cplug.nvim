@@ -162,6 +162,46 @@ local function require_optional_dependency(module_name)
   return nil
 end
 
+local function find_executable(candidates)
+  for _, candidate in ipairs(candidates) do
+    local resolved = vim.fn.exepath(candidate)
+
+    if type(resolved) == "string" and resolved ~= "" then
+      return resolved
+    end
+  end
+
+  return nil
+end
+
+local function maybe_register_auto_adapter(config, dap, adapter_name)
+  if type(dap.adapters) ~= "table" then
+    return
+  end
+
+  if dap.adapters[adapter_name] ~= nil then
+    return
+  end
+
+  if config.dap.auto_adapter ~= adapter_name then
+    return
+  end
+
+  if adapter_name == "lldb" then
+    local command = find_executable({ "lldb-dap", "codelldb", "lldb-vscode" })
+
+    if command == nil then
+      return
+    end
+
+    dap.adapters.lldb = {
+      type = "executable",
+      command = command,
+      name = "lldb",
+    }
+  end
+end
+
 local function ensure_adapter_registered(dap, adapter_name)
   local adapters = dap.adapters
 
@@ -453,6 +493,7 @@ function M.start(ctx, launch_config)
     low_level = low_level,
   }
 
+  maybe_register_auto_adapter(ctx.config, dap, run_config.type)
   adapter_ok, adapter_err = ensure_adapter_registered(dap, run_config.type)
 
   if not adapter_ok then

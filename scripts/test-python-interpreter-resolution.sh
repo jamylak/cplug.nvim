@@ -28,7 +28,7 @@ chmod +x "$TEST_DIR/.venv/bin/python"
 nvim --headless -u NONE -i NONE \
   --cmd "set rtp+=$ROOT_DIR" \
   --cmd "cd $TEST_DIR" \
-  "+lua local ok, err = pcall(function() package.loaded['dap'] = { run = function(cfg) vim.g.cplug_python_default = cfg end }; package.loaded['dapui'] = { open = function() end }; require('cplug').setup({ launch = { on_missing = 'always' } }); local result, run_err = require('cplug').compile_and_debug(); assert(result, run_err); assert(result.backend == 'python'); assert(vim.g.cplug_python_default.python == (vim.fn.getcwd() .. '/.venv/bin/python'):gsub('^/tmp/', '/private/tmp/')); assert(vim.g.cplug_python_default.program == (vim.fn.getcwd() .. '/app.py'):gsub('^/tmp/', '/private/tmp/')) end); if not ok then vim.api.nvim_err_writeln(err); vim.cmd('cquit 1') end" \
+  "+lua local ok, err = pcall(function() package.loaded['dap'] = { adapters = { python = {} }, run = function(cfg) vim.g.cplug_python_default = cfg end }; package.loaded['dapui'] = { open = function() end }; require('cplug').setup({ launch = { on_missing = 'always' } }); local result, run_err = require('cplug').compile_and_debug(); assert(result, run_err); assert(result.backend == 'python'); assert(vim.g.cplug_python_default.python == (vim.fn.getcwd() .. '/.venv/bin/python'):gsub('^/tmp/', '/private/tmp/')); assert(vim.g.cplug_python_default.program == (vim.fn.getcwd() .. '/app.py'):gsub('^/tmp/', '/private/tmp/')) end); if not ok then vim.api.nvim_err_writeln(err); vim.cmd('cquit 1') end" \
   +qall
 
 rm -f "$TEST_DIR/.vscode/launch.json"
@@ -36,7 +36,7 @@ rm -f "$TEST_DIR/.vscode/launch.json"
 nvim --headless -u NONE -i NONE \
   --cmd "set rtp+=$ROOT_DIR" \
   --cmd "cd $TEST_DIR" \
-  "+lua local ok, err = pcall(function() package.loaded['dap'] = { run = function(cfg) vim.g.cplug_python_override = cfg end }; package.loaded['dapui'] = { open = function() end }; require('cplug').setup({ launch = { on_missing = 'always' }, python = { interpreter = '/custom/python' } }); local result, run_err = require('cplug').compile_and_debug(); assert(result, run_err); assert(result.backend == 'python'); assert(vim.g.cplug_python_override.python == '/custom/python') end); if not ok then vim.api.nvim_err_writeln(err); vim.cmd('cquit 1') end" \
+  "+lua local ok, err = pcall(function() package.loaded['dap'] = { adapters = { python = {} }, run = function(cfg) vim.g.cplug_python_override = cfg end }; package.loaded['dapui'] = { open = function() end }; require('cplug').setup({ launch = { on_missing = 'always' }, python = { interpreter = '/custom/python' } }); local result, run_err = require('cplug').compile_and_debug(); assert(result, run_err); assert(result.backend == 'python'); assert(vim.g.cplug_python_override.python == '/custom/python') end); if not ok then vim.api.nvim_err_writeln(err); vim.cmd('cquit 1') end" \
   +qall
 
 echo "python interpreter resolution test passed"
