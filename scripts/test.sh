@@ -5,8 +5,10 @@ set -eu
 ROOT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 
 sh "$ROOT_DIR/scripts/headless-smoke.sh"
+sh "$ROOT_DIR/scripts/test-zero-config-debug.sh"
 sh "$ROOT_DIR/scripts/test-python-nested-layout.sh"
 sh "$ROOT_DIR/scripts/test-python-interpreter-resolution.sh"
+sh "$ROOT_DIR/scripts/test-python-debugpy-bootstrap.sh"
 sh "$ROOT_DIR/scripts/test-python-attach.sh"
 sh "$ROOT_DIR/scripts/test-cmake-template-generation.sh"
 sh "$ROOT_DIR/scripts/test-cmake-configure-terminal.sh"
@@ -20,5 +22,7 @@ sh "$ROOT_DIR/scripts/test-cmake-build-once-terminal-persist.sh"
 sh "$ROOT_DIR/scripts/test-cmake-build-and-run-terminal.sh"
 sh "$ROOT_DIR/scripts/test-cmake-empty-cpp-bootstrap.sh"
 sh "$ROOT_DIR/scripts/test-rust-launch-generation.sh"
+sh "$ROOT_DIR/scripts/test-dap-auto-lldb.sh"
+sh "$ROOT_DIR/scripts/test-dap-missing-adapter.sh"
 
 echo "all tests passed"

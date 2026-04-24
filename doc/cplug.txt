@@ -35,6 +35,8 @@ This version provides:
 - attach config generation for Python and native process attach flows
 - Python file discovery across common source layouts
 - `nvim-dap` / `nvim-dap-ui` startup from the resolved launch config
+- automatic common DAP adapter registration for generated LLDB and Python configs
+- automatic Python debug environment bootstrapping with `debugpy`
 - automatic `nvim-dap-disasm` wiring for the default low-level UI when it is installed
 - optional default DAP stepping and breakpoint keymaps
 
@@ -80,11 +82,11 @@ Select a specific `launch.json` configuration by name: >
   EOF
 <
 
-Auto-generate a minimal `launch.json` when one is missing: >
+`launch.json` is generated automatically by default. To change that policy: >
   lua << EOF
   require("cplug").setup({
     launch = {
-      on_missing = "always",
+      on_missing = "prompt", -- or "never"
     },
   })
   EOF
@@ -260,6 +262,27 @@ Override the Python interpreter used in generated launch configs: >
   EOF
 <
 
+By default, Python projects get a local `.venv` with `debugpy` when no usable
+project environment exists. cplug prefers `uv` for this and falls back to
+`python -m venv` plus `pip`. Configure the `uv` invocation if your environment
+needs specific transport or index behavior: >
+  lua << EOF
+  require("cplug").setup({
+    python = {
+      console = "internalConsole",
+      redirect_output = true,
+      uv = {
+        native_tls = true,
+        extra_args = { "--index-url", "https://example.invalid/simple" },
+        env = {
+          UV_NATIVE_TLS = "true",
+        },
+      },
+    },
+  })
+  EOF
+<
+
 Default keymaps:
 
 - `<leader>c` compile and debug
@@ -367,8 +390,16 @@ You can select a specific configuration by name through
 When the file is missing, `launch.on_missing` controls behavior:
 
 - `"prompt"` prompts before generating a backend-specific file
-- `"always"` generates automatically
+- `"always"` generates automatically and is the default
 - `"never"` returns an error
+
+Generated launch files are written as pretty multi-line JSON. By default,
+`dap.auto_adapter = "auto"` registers generated LLDB configs from `lldb-dap`,
+`codelldb`, or `lldb-vscode`, and Python configs through the resolved
+interpreter running `debugpy.adapter`. For Python, cplug also ensures `debugpy`
+is installed in the project env unless `python.bootstrap_debugpy = false` or
+you set an explicit `python.interpreter`. Set `dap.auto_adapter = "none"` to
+own adapter registration yourself.
 
 Project scaffolding uses the same mode names through
 `require("cplug").setup({ scaffold = { on_missing = "..." } })` and defaults to

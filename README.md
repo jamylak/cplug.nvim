@@ -30,6 +30,7 @@ This project currently has:
 - an existing-project Cargo backend for Rust
 - a minimal Python backend for existing projects
 - `nvim-dap` / `nvim-dap-ui` startup from the resolved launch config
+- automatic common DAP adapter registration for generated C/C++/Rust LLDB and Python debugpy configs
 - automatic `nvim-dap-disasm` wiring for the default low-level UI when it is installed
 - optional default DAP stepping and breakpoint keymaps
 
@@ -43,6 +44,7 @@ Current backend scope:
 - missing Rust `launch.json` generation from the first Cargo binary target
 - Python detection for existing projects via `pyproject.toml`, `requirements.txt`, or discovered `*.py` files in common source layouts
 - Python launch generation with interpreter defaults from `.venv`, `venv`, `python3`, or `python`
+- automatic Python debug environment bootstrapping with `debugpy`
 - attach config generation for Python and native process attach flows
 - debug launch resolution through `.vscode/launch.json`
 - no Python scaffolding yet
@@ -84,12 +86,12 @@ require("cplug").setup({
 })
 ```
 
-Auto-generate a minimal `launch.json` when one is missing:
+`launch.json` is generated automatically by default. To change that policy:
 
 ```lua
 require("cplug").setup({
   launch = {
-    on_missing = "always",
+    on_missing = "prompt", -- or "never"
   },
 })
 ```
@@ -256,6 +258,27 @@ require("cplug").setup({
 })
 ```
 
+By default, Python projects get a local `.venv` with `debugpy` when no usable
+project environment exists. cplug prefers `uv` for this and falls back to
+`python -m venv` plus `pip`. Configure the `uv` invocation if your environment
+needs specific transport or index behavior:
+
+```lua
+require("cplug").setup({
+  python = {
+    console = "internalConsole",
+    redirect_output = true,
+    uv = {
+      native_tls = true,
+      extra_args = { "--index-url", "https://example.invalid/simple" },
+      env = {
+        UV_NATIVE_TLS = "true",
+      },
+    },
+  },
+})
+```
+
 Default keymaps:
 
 - `<leader>c` compile and debug
@@ -398,8 +421,17 @@ If you want extra convenience bindings without fully opting out, set
 The shared launch layer expects `.vscode/launch.json` by default, can select a named configuration via `opts.launch.configuration`, and can handle missing files with `opts.launch.on_missing`:
 
 - `"prompt"` prompts before generating a backend-specific launch file
-- `"always"` generates automatically
+- `"always"` generates automatically and is the default
 - `"never"` returns an error
+
+Generated launch files are written as pretty multi-line JSON. By default,
+`dap.auto_adapter = "auto"` also registers the common generated adapters when
+possible: `lldb` from `lldb-dap`, `codelldb`, or `lldb-vscode`, and `python`
+through the resolved interpreter running `debugpy.adapter`. For Python, cplug
+also ensures `debugpy` is installed in the project env unless
+`python.bootstrap_debugpy = false` or you set an explicit `python.interpreter`.
+Set `dap.auto_adapter = "none"` if you want to own adapter registration
+yourself.
 
 Project scaffolding uses `opts.scaffold.on_missing` with the same modes, and
 defaults to `"always"` so `<leader>c` will generate missing C/C++ project

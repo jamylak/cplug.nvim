@@ -30,7 +30,7 @@ EOF
 nvim --headless -u NONE -i NONE \
   --cmd "set rtp+=$ROOT_DIR" \
   --cmd "cd $TEST_DIR" \
-  "+lua local ok, err = pcall(function() local old_notify = vim.notify; vim.notify = function() end; package.loaded['dap'] = { adapters = {}, run = function() error('dap.run should not be called without an adapter') end }; package.loaded['dapui'] = { open = function() error('dapui.open should not be called before adapter validation') end }; require('cplug').setup({ launch = { on_missing = 'always' } }); local result, run_err = require('cplug').compile_and_debug(); vim.notify = old_notify; assert(result == nil); assert(type(run_err) == 'string' and run_err:find('Config references missing adapter', 1, true), run_err) end); if not ok then vim.api.nvim_err_writeln(err); vim.cmd('cquit 1') end" \
+  "+lua local ok, err = pcall(function() local old_notify = vim.notify; vim.notify = function() end; package.loaded['dap'] = { adapters = {}, run = function() error('dap.run should not be called without an adapter') end }; package.loaded['dapui'] = { open = function() error('dapui.open should not be called before adapter validation') end }; require('cplug').setup({ launch = { on_missing = 'always' }, dap = { auto_adapter = 'none' } }); local result, run_err = require('cplug').compile_and_debug(); vim.notify = old_notify; assert(result == nil); assert(type(run_err) == 'string' and run_err:find('Config references missing adapter', 1, true), run_err) end); if not ok then vim.api.nvim_err_writeln(err); vim.cmd('cquit 1') end" \
   +qall
 
 echo "dap missing adapter test passed"
