@@ -28,6 +28,92 @@ local function read_file(path)
   return table.concat(vim.fn.readfile(path), "\n")
 end
 
+local function is_array(value)
+  local count = 0
+
+  for key, _ in pairs(value) do
+    if type(key) ~= "number" or key < 1 or key % 1 ~= 0 then
+      return false
+    end
+
+    count = count + 1
+  end
+
+  return count == #value
+end
+
+local function sorted_keys(value)
+  local keys = vim.tbl_keys(value)
+  local priority = {
+    version = 1,
+    configurations = 2,
+    name = 10,
+    type = 11,
+    request = 12,
+    program = 13,
+    cwd = 14,
+    console = 15,
+    redirectOutput = 16,
+    python = 17,
+    pid = 18,
+    connect = 19,
+    host = 20,
+    port = 21,
+  }
+
+  table.sort(keys, function(left, right)
+    local left_priority = priority[left] or 100
+    local right_priority = priority[right] or 100
+
+    if left_priority ~= right_priority then
+      return left_priority < right_priority
+    end
+
+    return tostring(left) < tostring(right)
+  end)
+
+  return keys
+end
+
+local function encode_json_pretty(value, indent_level)
+  indent_level = indent_level or 0
+
+  if type(value) == "table" then
+    local current_indent = string.rep("  ", indent_level)
+    local child_indent = string.rep("  ", indent_level + 1)
+
+    if vim.tbl_isempty(value) then
+      return is_array(value) and "[]" or "{}"
+    end
+
+    local lines = {}
+
+    if is_array(value) then
+      for index = 1, #value do
+        table.insert(lines, child_indent .. encode_json_pretty(value[index], indent_level + 1))
+      end
+
+      return "[\n" .. table.concat(lines, ",\n") .. "\n" .. current_indent .. "]"
+    end
+
+    for _, key in ipairs(sorted_keys(value)) do
+      local encoded_key = vim.json.encode(tostring(key))
+      local encoded_value = encode_json_pretty(value[key], indent_level + 1)
+      table.insert(lines, ("%s%s: %s"):format(child_indent, encoded_key, encoded_value))
+    end
+
+    return "{\n" .. table.concat(lines, ",\n") .. "\n" .. current_indent .. "}"
+  end
+
+  local ok, encoded = pcall(vim.json.encode, value)
+
+  if not ok then
+    error(encoded)
+  end
+
+  return encoded
+end
+
 local function decode(json_text, path)
   local ok, decoded = pcall(vim.json.decode, json_text)
 
@@ -57,13 +143,13 @@ local function write_launch_file(path, launch_config)
     vim.fn.mkdir(dir, "p")
   end
 
-  local ok, encoded = pcall(vim.json.encode, launch_config)
+  local ok, encoded = pcall(encode_json_pretty, launch_config)
 
   if not ok then
     return nil, ("Failed to encode launch config for `%s`: %s"):format(path, encoded)
   end
 
-  local write_ok = vim.fn.writefile({ encoded }, path)
+  local write_ok = vim.fn.writefile(vim.split(encoded, "\n", { plain = true }), path)
 
   if write_ok ~= 0 then
     return nil, ("Failed to write launch config to `%s`"):format(path)

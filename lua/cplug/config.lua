@@ -20,7 +20,7 @@ local defaults = {
   launch = {
     path = ".vscode/launch.json",
     configuration = nil,
-    on_missing = "prompt",
+    on_missing = "always",
   },
   scaffold = {
     on_missing = "always",
@@ -29,7 +29,7 @@ local defaults = {
     open_ui = true,
     manage_ui_layout = true,
     layout = "auto",
-    auto_adapter = "none",
+    auto_adapter = "auto",
     disassembly = {
       enabled = true,
     },
@@ -45,6 +45,17 @@ local defaults = {
   },
   python = {
     interpreter = nil,
+    env_dir = ".venv",
+    bootstrap_debugpy = true,
+    debugpy_package = "debugpy",
+    console = "internalConsole",
+    redirect_output = true,
+    uv = {
+      command = "uv",
+      native_tls = false,
+      extra_args = {},
+      env = {},
+    },
   },
 }
 

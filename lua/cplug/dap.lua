@@ -174,16 +174,24 @@ local function find_executable(candidates)
   return nil
 end
 
-local function maybe_register_auto_adapter(config, dap, adapter_name)
+local function auto_adapter_enabled(config, adapter_name)
+  local requested = config.dap.auto_adapter
+
+  return requested == true or requested == "auto" or requested == adapter_name
+end
+
+local function maybe_register_auto_adapter(config, dap, run_config)
   if type(dap.adapters) ~= "table" then
     return
   end
+
+  local adapter_name = run_config.type
 
   if dap.adapters[adapter_name] ~= nil then
     return
   end
 
-  if config.dap.auto_adapter ~= adapter_name then
+  if not auto_adapter_enabled(config, adapter_name) then
     return
   end
 
@@ -198,6 +206,20 @@ local function maybe_register_auto_adapter(config, dap, adapter_name)
       type = "executable",
       command = command,
       name = "lldb",
+    }
+  end
+
+  if adapter_name == "python" then
+    local command = run_config.python or find_executable({ "python3", "python" })
+
+    if command == nil then
+      return
+    end
+
+    dap.adapters.python = {
+      type = "executable",
+      command = command,
+      args = { "-m", "debugpy.adapter" },
     }
   end
 end
@@ -493,7 +515,7 @@ function M.start(ctx, launch_config)
     low_level = low_level,
   }
 
-  maybe_register_auto_adapter(ctx.config, dap, run_config.type)
+  maybe_register_auto_adapter(ctx.config, dap, run_config)
   adapter_ok, adapter_err = ensure_adapter_registered(dap, run_config.type)
 
   if not adapter_ok then
