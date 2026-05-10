@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug app",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/cplug_fixture_app",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Debug tests",
+      "type": "lldb",
+      "program": "${workspaceFolder}/build/cplug_fixture_tests",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Attach running process",
+      "type": "lldb",
+      "request": "attach",
+      "pid": "${command:pickProcess}",
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}

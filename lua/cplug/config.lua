@@ -20,6 +20,7 @@ local defaults = {
   launch = {
     path = ".vscode/launch.json",
     configuration = nil,
+    select = "auto",
     on_missing = "always",
   },
   scaffold = {

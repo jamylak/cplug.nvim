@@ -86,6 +86,16 @@ require("cplug").setup({
 })
 ```
 
+Control how cplug chooses among compatible launch configurations:
+
+```lua
+require("cplug").setup({
+  launch = {
+    select = "auto", -- "auto" | "first" | "picker"
+  },
+})
+```
+
 `launch.json` is generated automatically by default. To change that policy:
 
 ```lua

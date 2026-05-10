@@ -1,0 +1,11 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Broken fixture",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/cplug_fixture_broken_launch"
+    }
+  ,
+}

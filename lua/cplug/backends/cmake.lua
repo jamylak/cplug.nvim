@@ -18,6 +18,18 @@ local ignored_dirs = {
   ["venv"] = true,
 }
 
+local ignored_empty_repo_files = {
+  [".editorconfig"] = true,
+  [".gitattributes"] = true,
+  [".gitignore"] = true,
+  ["license"] = true,
+  ["license.md"] = true,
+  ["license.txt"] = true,
+  ["readme"] = true,
+  ["readme.md"] = true,
+  ["readme.txt"] = true,
+}
+
 local function file_exists(path)
   return vim.fn.filereadable(path) == 1
 end
@@ -106,7 +118,9 @@ local function repo_is_empty(root, build_dir)
       break
     end
 
-    if not ignored_dirs[name] and name ~= build_dir_name then
+    local lower_name = name:lower()
+
+    if not ignored_dirs[name] and name ~= build_dir_name and not ignored_empty_repo_files[lower_name] then
       return false
     end
   end

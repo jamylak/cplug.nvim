@@ -1,5 +1,7 @@
 local M = {}
 
+local picker_override
+
 local function launch_path(ctx)
   return vim.fs.joinpath(ctx.cwd, ctx.config.launch.path)
 end
@@ -10,6 +12,94 @@ local function request_kind_label(request_kind)
   end
 
   return "launch"
+end
+
+local function is_attach_request(request)
+  return request == "attach"
+end
+
+local function is_launch_request(request)
+  return request == nil or request == "launch"
+end
+
+local function is_compatible_configuration(configuration, request_kind)
+  local request = configuration.request
+
+  if request_kind == "attach" then
+    return is_attach_request(request)
+  end
+
+  return is_launch_request(request)
+end
+
+local function mismatch_error(configuration_name, path, request_kind)
+  if request_kind == "attach" then
+    return ("Launch configuration `%s` in `%s` is not an attach configuration"):format(configuration_name, path)
+  end
+
+  return ("Launch configuration `%s` in `%s` is not a launch configuration"):format(configuration_name, path)
+end
+
+local function missing_compatible_error(path, request_kind)
+  if request_kind == "attach" then
+    return ("No attach configuration was found in `%s`"):format(path)
+  end
+
+  return ("No launch configuration was found in `%s`"):format(path)
+end
+
+local function configuration_entries(configurations)
+  local entries = {}
+
+  for _, configuration in ipairs(configurations) do
+    local details = {}
+    local request = configuration.request or "launch"
+
+    details[#details + 1] = ("request=%s"):format(request)
+
+    if type(configuration.type) == "string" and configuration.type ~= "" then
+      details[#details + 1] = ("type=%s"):format(configuration.type)
+    end
+
+    if type(configuration.program) == "string" and configuration.program ~= "" then
+      details[#details + 1] = configuration.program
+    elseif type(configuration.module) == "string" and configuration.module ~= "" then
+      details[#details + 1] = ("module=%s"):format(configuration.module)
+    elseif type(configuration.pid) == "string" and configuration.pid ~= "" then
+      details[#details + 1] = ("pid=%s"):format(configuration.pid)
+    elseif type(configuration.connect) == "table" then
+      local host = configuration.connect.host or "127.0.0.1"
+      local port = configuration.connect.port or "?"
+      details[#details + 1] = ("connect=%s:%s"):format(host, port)
+    end
+
+    entries[#entries + 1] = {
+      name = configuration.name,
+      description = table.concat(details, "  "),
+      ordinal = table.concat({
+        configuration.name or "",
+        request,
+        configuration.type or "",
+        configuration.program or "",
+        configuration.module or "",
+      }, " "),
+      configuration = configuration,
+    }
+  end
+
+  return entries
+end
+
+local function pick_configuration(configurations)
+  local picker = picker_override
+
+  if picker == nil then
+    picker = require("cplug.launch_config_picker").pick
+  end
+
+  return picker({
+    entries = configuration_entries(configurations),
+  })
 end
 
 local function missing_launch_error(path, request_kind)
@@ -134,6 +224,10 @@ end
 
 function M.path(ctx)
   return launch_path(ctx)
+end
+
+local function file_exists(path)
+  return vim.fn.filereadable(path) == 1
 end
 
 local function write_launch_file(path, launch_config)
@@ -306,10 +400,14 @@ function M.write_generated(ctx, backend, project, build_result, opts)
     return nil, generate_err
   end
 
-  local existing_data = M.read(ctx)
+  if not file_exists(path) then
+    return write_launch_file(path, generated_config)
+  end
+
+  local existing_data, read_err = M.read(ctx)
 
   if not existing_data then
-    return write_launch_file(path, generated_config)
+    return nil, read_err
   end
 
   local merged = merge_generated_config(existing_data, generated_config)
@@ -317,19 +415,38 @@ function M.write_generated(ctx, backend, project, build_result, opts)
   return write_launch_file(path, merged)
 end
 
+local function compatible_configurations(launch_data, request_kind)
+  local compatible = {}
+
+  for _, configuration in ipairs(launch_data.raw.configurations) do
+    if is_compatible_configuration(configuration, request_kind) then
+      compatible[#compatible + 1] = configuration
+    end
+  end
+
+  return compatible
+end
+
+function M.compatible_configurations(launch_data, opts)
+  opts = opts or {}
+  return compatible_configurations(launch_data, opts.request_kind)
+end
+
+function M.set_picker(picker)
+  picker_override = picker
+end
+
 function M.select(ctx, launch_data, opts)
   opts = opts or {}
   local request_kind = opts.request_kind
   local selected_name = ctx.config.launch.configuration
+  local select_mode = ctx.config.launch.select or "auto"
 
   if selected_name then
     for _, configuration in ipairs(launch_data.raw.configurations) do
       if configuration.name == selected_name then
-        if request_kind == "attach" and configuration.request ~= "attach" then
-          return nil, ("Launch configuration `%s` in `%s` is not an attach configuration"):format(
-            selected_name,
-            launch_data.path
-          )
+        if not is_compatible_configuration(configuration, request_kind) then
+          return nil, mismatch_error(selected_name, launch_data.path, request_kind)
         end
 
         return configuration
@@ -339,25 +456,60 @@ function M.select(ctx, launch_data, opts)
     return nil, ("Launch configuration `%s` was not found in `%s`"):format(selected_name, launch_data.path)
   end
 
-  if request_kind == "attach" then
-    for _, configuration in ipairs(launch_data.raw.configurations) do
-      if configuration.request == "attach" then
-        return configuration
-      end
-    end
+  local compatible = compatible_configurations(launch_data, request_kind)
 
-    return nil, ("No attach configuration was found in `%s`"):format(launch_data.path)
+  if vim.tbl_isempty(compatible) then
+    return nil, missing_compatible_error(launch_data.path, request_kind)
   end
 
-  return launch_data.raw.configurations[1]
+  if select_mode == "first" then
+    return compatible[1]
+  end
+
+  if select_mode == "auto" then
+    if #compatible == 1 then
+      return compatible[1]
+    end
+
+    local entry, pick_err = pick_configuration(compatible)
+
+    if not entry then
+      return nil, pick_err
+    end
+
+    return entry.configuration
+  end
+
+  if select_mode == "picker" then
+    if #compatible == 1 then
+      return compatible[1]
+    end
+
+    local entry, pick_err = pick_configuration(compatible)
+
+    if not entry then
+      return nil, pick_err
+    end
+
+    return entry.configuration
+  end
+
+  return nil, ("Unsupported `launch.select` mode `%s`"):format(select_mode)
 end
 
 function M.resolve(ctx, backend, project, build_result, opts)
   opts = opts or {}
   local request_kind = opts.request_kind
-  local launch_data, read_err = M.read(ctx)
+  local path = launch_path(ctx)
+  local launch_data, read_err
 
-  if not launch_data then
+  if file_exists(path) then
+    launch_data, read_err = M.read(ctx)
+
+    if not launch_data then
+      return nil, read_err
+    end
+  else
     launch_data, read_err = generate(ctx, backend, project, build_result, request_kind)
 
     if not launch_data then
