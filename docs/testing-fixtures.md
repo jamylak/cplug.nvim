@@ -41,10 +41,17 @@ Tool-dependent integration sections skip cleanly when required binaries are unav
 
 ## Manual demo
 
+One-line quick start for any fixture:
+
+```sh
+make demo-fixture FIXTURE=python-multi-launch
+```
+
 Open any fixture in a copied temp workspace with:
 
 ```sh
 make demo-fixture FIXTURE=cpp-existing-cmake
+make demo-fixture FIXTURE=python-multi-launch
 sh scripts/demo/fixture.sh python-multi-launch
 ```
 
