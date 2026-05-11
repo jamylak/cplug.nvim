@@ -57,6 +57,8 @@ sh scripts/demo/fixture.sh python-multi-launch
 
 The demo runner loads the local plugin, enables demo-friendly defaults, prints the main commands up front, and never mutates the committed fixture directory.
 
+If `nvim-dap`, `nvim-dap-ui`, or `nvim-nio` are not already installed in a standard local plugin path, the demo runner tries to fetch temporary copies automatically for the demo session. To force specific local paths instead, set `CPLUG_DEMO_DAP_DIR`, `CPLUG_DEMO_DAPUI_DIR`, and `CPLUG_DEMO_NIO_DIR`.
+
 ## Multi-launch fuzzy selection
 
 `launch.select = "auto"` is the default:

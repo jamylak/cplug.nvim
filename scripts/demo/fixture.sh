@@ -26,6 +26,70 @@ find_plugin_dir() {
   return 1
 }
 
+env_plugin_dir() {
+  env_name=$1
+  eval "printf '%s\n' \"\${$env_name:-}\""
+}
+
+fetch_plugin_dir() {
+  plugin_name=$1
+  repo=$2
+  dest=$STATE_DIR/plugins/$plugin_name
+
+  if [ -d "$dest" ]; then
+    printf '%s\n' "$dest"
+    return 0
+  fi
+
+  if [ "${CPLUG_DEMO_FETCH:-auto}" = "never" ]; then
+    return 1
+  fi
+
+  if ! command -v git >/dev/null 2>&1; then
+    return 1
+  fi
+
+  mkdir -p "$STATE_DIR/plugins"
+
+  if git clone --depth 1 "https://github.com/$repo.git" "$dest" >/dev/null 2>&1; then
+    printf '%s\n' "$dest"
+    return 0
+  fi
+
+  return 1
+}
+
+resolve_plugin_dir() {
+  plugin_name=$1
+  repo=$2
+  env_name=$3
+
+  override=$(env_plugin_dir "$env_name")
+
+  if [ -n "$override" ]; then
+    if [ -d "$override" ]; then
+      printf '%s\n' "$override"
+      return 0
+    fi
+
+    printf '%s\n' "configured $env_name path does not exist: $override" >&2
+    return 1
+  fi
+
+  found=
+  if found=$(find_plugin_dir "$plugin_name" 2>/dev/null); then
+    printf '%s\n' "$found"
+    return 0
+  fi
+
+  if fetched=$(fetch_plugin_dir "$plugin_name" "$repo" 2>/dev/null); then
+    printf '%s\n' "$fetched"
+    return 0
+  fi
+
+  return 1
+}
+
 append_plugin_init() {
   plugin_dir=$1
   init_file=$2
@@ -113,38 +177,56 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 DAP_DIR=
-if DAP_DIR=$(find_plugin_dir nvim-dap 2>/dev/null); then
+if DAP_DIR=$(resolve_plugin_dir nvim-dap mfussenegger/nvim-dap CPLUG_DEMO_DAP_DIR 2>/dev/null); then
   :
 else
   DAP_DIR=
 fi
 
 DAPUI_DIR=
-if DAPUI_DIR=$(find_plugin_dir nvim-dap-ui 2>/dev/null); then
+if DAPUI_DIR=$(resolve_plugin_dir nvim-dap-ui rcarriga/nvim-dap-ui CPLUG_DEMO_DAPUI_DIR 2>/dev/null); then
   :
 else
   DAPUI_DIR=
 fi
 
 DISASM_DIR=
-if DISASM_DIR=$(find_plugin_dir nvim-dap-disasm 2>/dev/null); then
+if DISASM_DIR=$(resolve_plugin_dir nvim-dap-disasm Jorenar/nvim-dap-disasm CPLUG_DEMO_DISASM_DIR 2>/dev/null); then
   :
 else
   DISASM_DIR=
 fi
 
 NIO_DIR=
-if NIO_DIR=$(find_plugin_dir nvim-nio 2>/dev/null); then
+if NIO_DIR=$(resolve_plugin_dir nvim-nio nvim-neotest/nvim-nio CPLUG_DEMO_NIO_DIR 2>/dev/null); then
   :
 else
   NIO_DIR=
 fi
 
 NUI_DIR=
-if NUI_DIR=$(find_plugin_dir nui.nvim 2>/dev/null); then
+if NUI_DIR=$(resolve_plugin_dir nui.nvim MunifTanjim/nui.nvim CPLUG_DEMO_NUI_DIR 2>/dev/null); then
   :
 else
   NUI_DIR=
+fi
+
+if [ -z "$DAP_DIR" ]; then
+  printf '%s\n' "failed to locate or fetch nvim-dap for the demo runner" >&2
+  printf '%s\n' "set CPLUG_DEMO_DAP_DIR=/path/to/nvim-dap or install mfussenegger/nvim-dap locally" >&2
+  exit 1
+fi
+
+if [ -z "$DAPUI_DIR" ]; then
+  printf '%s\n' "failed to locate or fetch nvim-dap-ui for the demo runner" >&2
+  printf '%s\n' "set CPLUG_DEMO_DAPUI_DIR=/path/to/nvim-dap-ui or install rcarriga/nvim-dap-ui locally" >&2
+  exit 1
+fi
+
+if [ -z "$NIO_DIR" ]; then
+  printf '%s\n' "failed to locate or fetch nvim-nio for the demo runner" >&2
+  printf '%s\n' "set CPLUG_DEMO_NIO_DIR=/path/to/nvim-nio or install nvim-neotest/nvim-nio locally" >&2
+  exit 1
 fi
 
 LLDB_COMMAND=
