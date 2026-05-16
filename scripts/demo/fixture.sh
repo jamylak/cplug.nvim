@@ -302,6 +302,9 @@ require("cplug").setup({
     on_missing = "always",
     select = "auto",
   },
+  python = {
+    bootstrap_debugpy = false,
+  },
 })
 EOF
 
@@ -322,6 +325,7 @@ printf '%s\n' "nvim-nio: ${NIO_DIR:-not found}"
 printf '%s\n' "nui.nvim: ${NUI_DIR:-not found}"
 printf '%s\n' "lldb adapter: ${LLDB_COMMAND:-not found}"
 printf '%s\n' "python adapter base: ${PYTHON_COMMAND:-not found}"
+printf '%s\n' "python debugpy bootstrap: disabled"
 printf '%s\n' "useful commands:"
 printf '%s\n' "  :CPlugCompileDebug"
 printf '%s\n' "  :CPlugAttach"

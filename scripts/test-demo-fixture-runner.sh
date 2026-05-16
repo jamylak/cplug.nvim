@@ -85,4 +85,14 @@ sh "$ROOT_DIR/scripts/demo/fixture.sh" cpp-existing-cmake -- \
   "+lua local ok, err = pcall(function() local result, run_err = require('cplug').compile_and_debug(); assert(result, run_err); assert(result.backend == 'cmake'); assert(vim.g.cplug_demo_runner_config ~= nil); end); if not ok then vim.api.nvim_err_writeln(err); vim.cmd('cquit 1') end" \
   +qall
 
+echo "==> demo fixture runner keeps auto selection without Python bootstrap"
+CPLUG_DEMO_FETCH=never \
+CPLUG_DEMO_DAP_DIR="$FAKE_DAP_DIR" \
+CPLUG_DEMO_DAPUI_DIR="$FAKE_DAPUI_DIR" \
+CPLUG_DEMO_NIO_DIR="$FAKE_NIO_DIR" \
+sh "$ROOT_DIR/scripts/demo/fixture.sh" python-multi-launch -- \
+  --headless \
+  "+lua local ok, err = pcall(function() local cfg = require('cplug').config(); assert(cfg.launch.select == 'auto'); assert(cfg.python.bootstrap_debugpy == false); local launch = require('cplug.launch'); launch.set_picker(function(opts) assert(#opts.entries == 2); return opts.entries[1] end); local original_system = vim.system; vim.system = function(args, opts) if args[2] == '-c' and args[3] == 'import debugpy' then return { wait = function() return { code = 1, stdout = '', stderr = '' } end } end error('unexpected bootstrap command: ' .. vim.inspect(args)) end; local result, run_err = require('cplug').compile_and_debug(); vim.system = original_system; launch.set_picker(nil); assert(result, run_err); assert(result.backend == 'python'); assert(vim.g.cplug_demo_runner_config.name == 'Debug app'); end); if not ok then vim.api.nvim_err_writeln(err); vim.cmd('cquit 1') end" \
+  +qall
+
 echo "demo fixture runner test passed"
