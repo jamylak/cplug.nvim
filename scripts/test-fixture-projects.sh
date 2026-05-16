@@ -29,11 +29,7 @@ ATTACH_PY_DIR=$(copy_fixture attach-python-debugpy cplug-fixture-projects)
 UNIT_LUA="$TEST_ROOT/fixture-projects.lua"
 
 mkdir -p "$PY_VENV_DIR/.venv/bin"
-cat > "$PY_VENV_DIR/.venv/bin/python" <<'EOF'
-#!/bin/sh
-exit 0
-EOF
-chmod +x "$PY_VENV_DIR/.venv/bin/python"
+ln -s /usr/bin/true "$PY_VENV_DIR/.venv/bin/python"
 
 cat > "$UNIT_LUA" <<EOF
 local backends = require("cplug.backends")
@@ -95,11 +91,12 @@ do
   local cmake_lists = table.concat(vim.fn.readfile(vim.fs.joinpath(c_source_dir, "CMakeLists.txt")), "\n")
   assert(cmake_lists:find("main.c", 1, true) ~= nil)
   assert(cmake_lists:find("mathlib.c", 1, true) ~= nil)
-  local generated = cmake.default_launch_config(nil, nil, {
+  local generated = cmake.default_launch_config(make_ctx(c_source_dir), nil, {
     binaries = { vim.fs.joinpath(c_source_dir, "build", "c_source_only") },
   })
   assert(generated.configurations[1].request == "launch")
   assert(generated.configurations[1].type == "lldb")
+  assert(generated.configurations[1].program == "\${workspaceFolder}/build/c_source_only")
 end
 
 do
@@ -140,9 +137,7 @@ do
   }), project, {
     interpreter = "/fake/python",
   })
-  assert(
-    normalize(generated.configurations[1].program) == normalize(vim.fs.joinpath(py_single_dir, "main.py"))
-  )
+  assert(generated.configurations[1].program == "\${workspaceFolder}/main.py")
   assert(generated.configurations[1].python == "/fake/python")
 end
 
