@@ -82,7 +82,15 @@ make demo-fixture FIXTURE=rust-bin
 make demo-fixture FIXTURE=rust-lib-only
 ```
 
-The demo runner loads the local plugin, enables demo-friendly defaults, prints the main commands up front, and never mutates the committed fixture directory. Python debugpy bootstrapping is disabled in fixture demos so opening a Python fixture does not create a virtualenv or invoke `uv` before launch selection. `launch.select = "auto"` is preserved, so multi-launch fixtures open the launch picker on `<leader>c`.
+The demo runner loads the local plugin, enables demo-friendly defaults, prints the main commands up front, and never mutates the committed fixture directory. Python fixture demos prepare a temp-local `.venv` with `debugpy` before opening Neovim, then set `python.bootstrap_debugpy = false` inside cplug so `<leader>c` can reach launch selection without doing environment setup inside the editor. `launch.select = "auto"` is preserved, so multi-launch fixtures open the launch picker on `<leader>c`.
+
+To use a specific Python for fixture demos, set:
+
+```sh
+CPLUG_DEMO_PYTHON_COMMAND=/path/to/python make demo-fixture FIXTURE=python-multi-launch
+```
+
+To skip demo Python setup entirely, set `CPLUG_DEMO_PYTHON_BOOTSTRAP=never`.
 
 If `nvim-dap`, `nvim-dap-ui`, or `nvim-nio` are not already installed in a standard local plugin path, the demo runner tries to fetch temporary copies automatically for the demo session. To force specific local paths instead, set `CPLUG_DEMO_DAP_DIR`, `CPLUG_DEMO_DAPUI_DIR`, and `CPLUG_DEMO_NIO_DIR`.
 

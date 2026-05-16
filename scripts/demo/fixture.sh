@@ -131,6 +131,76 @@ find_target_file() {
   return 1
 }
 
+is_python_fixture() {
+  demo_dir=$1
+
+  if [ -f "$demo_dir/pyproject.toml" ] || [ -f "$demo_dir/requirements.txt" ]; then
+    return 0
+  fi
+
+  if find "$demo_dir" -type f -name '*.py' ! -path '*/.venv/*' ! -path '*/venv/*' | grep . >/dev/null 2>&1; then
+    return 0
+  fi
+
+  return 1
+}
+
+find_base_python() {
+  for candidate in python3 python; do
+    if command -v "$candidate" >/dev/null 2>&1; then
+      command -v "$candidate"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+ensure_demo_python() {
+  demo_dir=$1
+  demo_python=$demo_dir/.venv/bin/python
+
+  if [ -n "${CPLUG_DEMO_PYTHON_COMMAND:-}" ]; then
+    if [ -x "$CPLUG_DEMO_PYTHON_COMMAND" ]; then
+      printf '%s\n' "$CPLUG_DEMO_PYTHON_COMMAND"
+      return 0
+    fi
+
+    printf '%s\n' "configured CPLUG_DEMO_PYTHON_COMMAND is not executable: $CPLUG_DEMO_PYTHON_COMMAND" >&2
+    return 1
+  fi
+
+  if [ -x "$demo_python" ] && "$demo_python" -c "import debugpy" >/dev/null 2>&1; then
+    printf '%s\n' "$demo_python"
+    return 0
+  fi
+
+  if [ "${CPLUG_DEMO_PYTHON_BOOTSTRAP:-auto}" = "never" ]; then
+    find_base_python
+    return
+  fi
+
+  printf '%s\n' "preparing demo Python debug environment in $demo_dir/.venv" >&2
+
+  if command -v uv >/dev/null 2>&1; then
+    uv venv "$demo_dir/.venv" >/dev/null
+    uv pip install --python "$demo_python" debugpy >/dev/null
+  else
+    base_python=$(find_base_python)
+    "$base_python" -m venv "$demo_dir/.venv"
+    "$demo_python" -m pip install --upgrade pip >/dev/null
+    "$demo_python" -m pip install debugpy >/dev/null
+  fi
+
+  if "$demo_python" -c "import debugpy" >/dev/null 2>&1; then
+    printf '%s\n' "$demo_python"
+    return 0
+  fi
+
+  printf '%s\n' "failed to prepare demo Python with debugpy at $demo_python" >&2
+  return 1
+}
+
 usage() {
   cat <<'EOF'
 usage: sh scripts/demo/fixture.sh <fixture> [-- <extra nvim args>]
@@ -238,12 +308,18 @@ for candidate in lldb-dap codelldb lldb-vscode; do
 done
 
 PYTHON_COMMAND=
-for candidate in python3 python; do
-  if command -v "$candidate" >/dev/null 2>&1; then
-    PYTHON_COMMAND=$(command -v "$candidate")
-    break
+if is_python_fixture "$DEMO_DIR"; then
+  if PYTHON_COMMAND=$(ensure_demo_python "$DEMO_DIR"); then
+    :
+  else
+    printf '%s\n' "failed to prepare Python debug environment for fixture '$FIXTURE'" >&2
+    exit 1
   fi
-done
+elif PYTHON_COMMAND=$(find_base_python 2>/dev/null); then
+  :
+else
+  PYTHON_COMMAND=
+fi
 
 cat > "$INIT_FILE" <<EOF
 vim.g.mapleader = " "
@@ -284,7 +360,7 @@ if [ -n "$PYTHON_COMMAND" ]; then
 EOF
 fi
 
-cat >> "$INIT_FILE" <<'EOF'
+cat >> "$INIT_FILE" <<EOF
 end
 
 local ok_dapui, dapui = pcall(require, "dapui")
@@ -303,6 +379,7 @@ require("cplug").setup({
     select = "auto",
   },
   python = {
+    interpreter = "$PYTHON_COMMAND",
     bootstrap_debugpy = false,
   },
 })
@@ -325,7 +402,8 @@ printf '%s\n' "nvim-nio: ${NIO_DIR:-not found}"
 printf '%s\n' "nui.nvim: ${NUI_DIR:-not found}"
 printf '%s\n' "lldb adapter: ${LLDB_COMMAND:-not found}"
 printf '%s\n' "python adapter base: ${PYTHON_COMMAND:-not found}"
-printf '%s\n' "python debugpy bootstrap: disabled"
+printf '%s\n' "python project bootstrap: ${CPLUG_DEMO_PYTHON_BOOTSTRAP:-auto}"
+printf '%s\n' "cplug python.bootstrap_debugpy: false"
 printf '%s\n' "useful commands:"
 printf '%s\n' "  :CPlugCompileDebug"
 printf '%s\n' "  :CPlugAttach"
