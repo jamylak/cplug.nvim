@@ -102,6 +102,24 @@ local function pick_configuration(configurations)
   })
 end
 
+local function pick_configuration_async(configurations, callback)
+  if picker_override ~= nil then
+    local entry, pick_err = pick_configuration(configurations)
+    callback(entry, pick_err)
+    return
+  end
+
+  require("cplug.launch_config_picker").pick_async({
+    entries = configuration_entries(configurations),
+    on_select = function(entry)
+      callback(entry, nil)
+    end,
+    on_cancel = function()
+      callback(nil, "Launch configuration selection cancelled")
+    end,
+  })
+end
+
 local function missing_launch_error(path, request_kind)
   if request_kind == "attach" then
     return ("No attach config found at `%s`"):format(path)
@@ -497,6 +515,42 @@ function M.select(ctx, launch_data, opts)
   return nil, ("Unsupported `launch.select` mode `%s`"):format(select_mode)
 end
 
+function M.select_interactive(ctx, launch_data, opts, callback)
+  opts = opts or {}
+  local request_kind = opts.request_kind
+  local selected_name = ctx.config.launch.configuration
+  local select_mode = ctx.config.launch.select or "auto"
+
+  if selected_name or select_mode == "first" or picker_override ~= nil then
+    return M.select(ctx, launch_data, opts)
+  end
+
+  local compatible = compatible_configurations(launch_data, request_kind)
+
+  if vim.tbl_isempty(compatible) then
+    return nil, missing_compatible_error(launch_data.path, request_kind)
+  end
+
+  if select_mode == "auto" or select_mode == "picker" then
+    if #compatible == 1 then
+      return compatible[1]
+    end
+
+    pick_configuration_async(compatible, function(entry, pick_err)
+      if not entry then
+        callback(nil, pick_err)
+        return
+      end
+
+      callback(entry.configuration, nil)
+    end)
+
+    return nil, nil, true
+  end
+
+  return nil, ("Unsupported `launch.select` mode `%s`"):format(select_mode)
+end
+
 function M.resolve(ctx, backend, project, build_result, opts)
   opts = opts or {}
   local request_kind = opts.request_kind
@@ -518,6 +572,54 @@ function M.resolve(ctx, backend, project, build_result, opts)
   end
 
   local configuration, select_err = M.select(ctx, launch_data, opts)
+
+  if not configuration then
+    return nil, select_err
+  end
+
+  return {
+    configuration = configuration,
+    path = launch_data.path,
+    raw = launch_data.raw,
+  }
+end
+
+function M.resolve_interactive(ctx, backend, project, build_result, opts, callback)
+  opts = opts or {}
+  local request_kind = opts.request_kind
+  local path = launch_path(ctx)
+  local launch_data, read_err
+
+  if file_exists(path) then
+    launch_data, read_err = M.read(ctx)
+
+    if not launch_data then
+      return nil, read_err
+    end
+  else
+    launch_data, read_err = generate(ctx, backend, project, build_result, request_kind)
+
+    if not launch_data then
+      return nil, read_err
+    end
+  end
+
+  local configuration, select_err, pending = M.select_interactive(ctx, launch_data, opts, function(selected, callback_err)
+    if not selected then
+      callback(nil, callback_err)
+      return
+    end
+
+    callback({
+      configuration = selected,
+      path = launch_data.path,
+      raw = launch_data.raw,
+    }, nil)
+  end)
+
+  if pending then
+    return nil, nil, true
+  end
 
   if not configuration then
     return nil, select_err

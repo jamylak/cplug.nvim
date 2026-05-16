@@ -44,6 +44,25 @@ local function run_step(backend, method, ...)
   return result, secondary
 end
 
+local function start_debug_session(ctx, backend, project, build_result, launch_config)
+  local dap_result, dap_err = dap.start(ctx, launch_config)
+
+  if not dap_result then
+    notify(dap_err, vim.log.levels.ERROR)
+    return nil, dap_err
+  end
+
+  notify(("Started `%s` debug session via `%s`"):format(backend.id, dap_result.adapter), vim.log.levels.INFO)
+
+  return {
+    backend = backend.id,
+    build = build_result,
+    dap = dap_result,
+    launch = launch_config,
+    project = project,
+  }
+end
+
 function M.run(config)
   local backend, project, ctx, detect_err = detect_backend(config)
 
@@ -69,29 +88,30 @@ function M.run(config)
     return nil, build_err
   end
 
-  local launch_config, launch_err = launch.resolve(ctx, backend, project, build_result)
+  local launch_config, launch_err, pending = launch.resolve_interactive(ctx, backend, project, build_result, nil, function(selected, select_err)
+    if not selected then
+      notify(select_err, vim.log.levels.ERROR)
+      return
+    end
+
+    start_debug_session(ctx, backend, project, build_result, selected)
+  end)
+
+  if pending then
+    return {
+      backend = backend.id,
+      build = build_result,
+      pending = true,
+      project = project,
+    }
+  end
 
   if not launch_config then
     notify(launch_err, vim.log.levels.ERROR)
     return nil, launch_err
   end
 
-  local dap_result, dap_err = dap.start(ctx, launch_config)
-
-  if not dap_result then
-    notify(dap_err, vim.log.levels.ERROR)
-    return nil, dap_err
-  end
-
-  notify(("Started `%s` debug session via `%s`"):format(backend.id, dap_result.adapter), vim.log.levels.INFO)
-
-  return {
-    backend = backend.id,
-    build = build_result,
-    dap = dap_result,
-    launch = launch_config,
-    project = project,
-  }
+  return start_debug_session(ctx, backend, project, build_result, launch_config)
 end
 
 function M.attach(config)
@@ -101,9 +121,31 @@ function M.attach(config)
     return nil, detect_err
   end
 
-  local launch_config, launch_err = launch.resolve(ctx, backend, project, nil, {
+  local launch_config, launch_err, pending = launch.resolve_interactive(ctx, backend, project, nil, {
     request_kind = "attach",
-  })
+  }, function(selected, select_err)
+    if not selected then
+      notify(select_err, vim.log.levels.ERROR)
+      return
+    end
+
+    local dap_result, dap_err = dap.start(ctx, selected)
+
+    if not dap_result then
+      notify(dap_err, vim.log.levels.ERROR)
+      return
+    end
+
+    notify(("Attached `%s` debug session via `%s`"):format(backend.id, dap_result.adapter), vim.log.levels.INFO)
+  end)
+
+  if pending then
+    return {
+      backend = backend.id,
+      pending = true,
+      project = project,
+    }
+  end
 
   if not launch_config then
     notify(launch_err, vim.log.levels.ERROR)

@@ -240,7 +240,12 @@ function M.open(opts)
   if state.active then
     if state.prompt_win and vim.api.nvim_win_is_valid(state.prompt_win) then
       vim.api.nvim_set_current_win(state.prompt_win)
-      vim.cmd("startinsert")
+      vim.schedule(function()
+        if state.active and state.prompt_win and vim.api.nvim_win_is_valid(state.prompt_win) then
+          vim.api.nvim_set_current_win(state.prompt_win)
+          vim.cmd("startinsert")
+        end
+      end)
     end
     return true
   end
@@ -360,7 +365,12 @@ function M.open(opts)
     end,
   })
 
-  vim.cmd("startinsert")
+  vim.schedule(function()
+    if state.active and state.prompt_win and vim.api.nvim_win_is_valid(state.prompt_win) then
+      vim.api.nvim_set_current_win(state.prompt_win)
+      vim.cmd("startinsert")
+    end
+  end)
 
   return true
 end
@@ -395,6 +405,17 @@ function M.pick(opts)
   end
 
   return selected
+end
+
+function M.pick_async(opts)
+  opts = opts or {}
+
+  return M.open({
+    entries = opts.entries,
+    initial_query = opts.initial_query,
+    on_select = opts.on_select,
+    on_cancel = opts.on_cancel,
+  })
 end
 
 function M.close()
