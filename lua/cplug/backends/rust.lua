@@ -2,6 +2,8 @@ local M = {
   id = "rust",
 }
 
+local path_util = require("cplug.path")
+
 local function file_exists(path)
   return vim.fn.filereadable(path) == 1
 end
@@ -123,7 +125,7 @@ function M.build(_, project)
   }
 end
 
-function M.default_launch_config(_, _, build_result)
+function M.default_launch_config(ctx, _, build_result)
   return {
     version = "0.2.0",
     configurations = {
@@ -131,7 +133,7 @@ function M.default_launch_config(_, _, build_result)
         name = ("Debug %s"):format(path_basename(build_result.binary)),
         type = "lldb",
         request = "launch",
-        program = build_result.binary,
+        program = path_util.workspace_path(ctx, build_result.binary),
         cwd = "${workspaceFolder}",
       },
     },

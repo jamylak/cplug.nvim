@@ -2,6 +2,8 @@ local M = {
   id = "cmake",
 }
 
+local path_util = require("cplug.path")
+
 local source_languages = {
   c = "C",
   cc = "CXX",
@@ -663,7 +665,7 @@ function M.resolve_binaries(_, project)
   }
 end
 
-function M.default_launch_config(_, _, build_result)
+function M.default_launch_config(ctx, _, build_result)
   if vim.tbl_isempty(build_result.binaries or {}) then
     error("no built executable was found in the CMake build directory")
   end
@@ -678,7 +680,7 @@ function M.default_launch_config(_, _, build_result)
         name = name,
         type = "lldb",
         request = "launch",
-        program = program,
+        program = path_util.workspace_path(ctx, program),
         cwd = "${workspaceFolder}",
       },
     },

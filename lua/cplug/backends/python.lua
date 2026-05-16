@@ -2,6 +2,8 @@ local M = {
   id = "python",
 }
 
+local path_util = require("cplug.path")
+
 local function has_file(path)
   return vim.fn.filereadable(path) == 1
 end
@@ -336,7 +338,7 @@ function M.default_launch_config(ctx, project, build_result)
     name = "Debug current file",
     type = "python",
     request = "launch",
-    program = resolve_program(project),
+    program = path_util.workspace_path(ctx, resolve_program(project)),
     console = ctx.config.python.console,
     redirectOutput = ctx.config.python.redirect_output,
   }
