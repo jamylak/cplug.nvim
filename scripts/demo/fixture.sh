@@ -245,6 +245,8 @@ for candidate in python3 python; do
   fi
 done
 
+LAUNCH_SELECT=${CPLUG_DEMO_LAUNCH_SELECT:-first}
+
 cat > "$INIT_FILE" <<EOF
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
@@ -300,7 +302,10 @@ require("cplug").setup({
   },
   launch = {
     on_missing = "always",
-    select = "auto",
+    select = os.getenv("CPLUG_DEMO_LAUNCH_SELECT") or "first",
+  },
+  python = {
+    bootstrap_debugpy = false,
   },
 })
 EOF
@@ -322,6 +327,8 @@ printf '%s\n' "nvim-nio: ${NIO_DIR:-not found}"
 printf '%s\n' "nui.nvim: ${NUI_DIR:-not found}"
 printf '%s\n' "lldb adapter: ${LLDB_COMMAND:-not found}"
 printf '%s\n' "python adapter base: ${PYTHON_COMMAND:-not found}"
+printf '%s\n' "python debugpy bootstrap: disabled"
+printf '%s\n' "launch selection: $LAUNCH_SELECT"
 printf '%s\n' "useful commands:"
 printf '%s\n' "  :CPlugCompileDebug"
 printf '%s\n' "  :CPlugAttach"
