@@ -41,13 +41,6 @@ Tool-dependent integration sections skip cleanly when required binaries are unav
 
 ## Manual demo
 
-List available fixtures with:
-
-```sh
-make list-fixtures
-sh scripts/demo/fixture.sh --list
-```
-
 One-line quick start for any fixture:
 
 ```sh
@@ -62,31 +55,7 @@ make demo-fixture FIXTURE=python-multi-launch
 sh scripts/demo/fixture.sh python-multi-launch
 ```
 
-Copy-paste commands for every fixture:
-
-```sh
-make demo-fixture FIXTURE=attach-python-debugpy
-make demo-fixture FIXTURE=c-source-only
-make demo-fixture FIXTURE=cpp-broken-vscode-launch
-make demo-fixture FIXTURE=cpp-empty
-make demo-fixture FIXTURE=cpp-existing-cmake
-make demo-fixture FIXTURE=cpp-existing-vscode-launch
-make demo-fixture FIXTURE=cpp-multi-launch
-make demo-fixture FIXTURE=cpp-source-only-ambiguous
-make demo-fixture FIXTURE=mixed-cmake-python
-make demo-fixture FIXTURE=python-existing-venv
-make demo-fixture FIXTURE=python-multi-launch
-make demo-fixture FIXTURE=python-package-pyproject
-make demo-fixture FIXTURE=python-single-file
-make demo-fixture FIXTURE=rust-bin
-make demo-fixture FIXTURE=rust-lib-only
-```
-
-The demo runner loads the local plugin, enables demo-friendly defaults, prints the main commands up front, and never mutates the committed fixture directory. Demo fixtures default to `launch.select = "first"` so `<leader>c` runs immediately even for multi-launch fixtures. Python debugpy bootstrapping is disabled in demos so opening a Python fixture does not create a virtualenv or invoke `uv`; install `debugpy` for the Python adapter you use if you want the debug session to fully attach. To exercise the picker manually, run:
-
-```sh
-CPLUG_DEMO_LAUNCH_SELECT=picker make demo-fixture FIXTURE=python-multi-launch
-```
+The demo runner loads the local plugin, enables demo-friendly defaults, prints the main commands up front, and never mutates the committed fixture directory.
 
 If `nvim-dap`, `nvim-dap-ui`, or `nvim-nio` are not already installed in a standard local plugin path, the demo runner tries to fetch temporary copies automatically for the demo session. To force specific local paths instead, set `CPLUG_DEMO_DAP_DIR`, `CPLUG_DEMO_DAPUI_DIR`, and `CPLUG_DEMO_NIO_DIR`.
 
