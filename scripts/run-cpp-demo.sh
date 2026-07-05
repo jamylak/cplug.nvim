@@ -10,7 +10,9 @@ find_plugin_dir() {
 
   for pattern in \
     "$HOME/.local/share/nvim/lazy/$plugin_name" \
+    "$HOME/.local/share/nvim/site/pack/"*/opt/"$plugin_name" \
     "$HOME/.local/share/nvim/site/pack/"*/start/"$plugin_name" \
+    "$HOME/.config/nvim/pack/"*/opt/"$plugin_name" \
     "$HOME/.config/nvim/pack/"*/start/"$plugin_name"
   do
     for candidate in $pattern; do
